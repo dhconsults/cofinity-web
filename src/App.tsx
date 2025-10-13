@@ -1,11 +1,24 @@
+import { Loader, Settings } from "lucide-react";
 import "./App.css";
 import Button from "./components/Button";
 import { Card } from "./components/Card";
 import { Input } from "./components/Input";
+import NavbarButton from "./components/NavbarButton";
 
 function App() {
   return (
     <>
+      <NavbarButton icon={<Loader />} clasName="mb-5">
+        {" "}
+        Not Now
+      </NavbarButton>
+      <NavbarButton icon={<Settings />}> Settings</NavbarButton>
+      {[1, 2, 3, 4, 5, 6].map((value, key) => (
+        <NavbarButton key={key} icon={<Settings />}>
+          {" "}
+          {`Settings ${value}`}
+        </NavbarButton>
+      ))}
       <div className="flex flex-col items-center gap-4 min-h-screen justify-center bg-red-500 ">
         <Button>Default</Button>
         <button className="bg-green-400 p-6"> hello there</button>
