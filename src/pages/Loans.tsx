@@ -99,10 +99,15 @@ const Loans = () => {
             Settings
           </button>
         </div>
+        <div className=" mt-4 sm:mt-0">
+          <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900">
+            New Loan Application
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4 text-black">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6 text-black">
         {[
           {
             title: "Total Loan Issued",
@@ -189,12 +194,6 @@ const Loans = () => {
               d="M19 9l-7 7-7-7"
             />
           </svg>
-        </div>
-
-        <div className="w-full flex mt-4 md:mt-0 md:justify-end">
-          <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900">
-            New Loan Application
-          </button>
         </div>
       </div>
 

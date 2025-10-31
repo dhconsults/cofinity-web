@@ -35,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {title && (
-          <h1 className="font-semibold text-gray-800 text-lg sm:text-xl md:text-2xl">
+          <h1 className="font-bold text-black text-lg sm:text-xl md:text-2xl">
             {title}
           </h1>
         )}
