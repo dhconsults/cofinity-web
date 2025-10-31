@@ -166,7 +166,7 @@ const Member = () => {
                     {member.contribution}
                   </td>
                   <td className="py-3 px-4 text-sm text-blue-500">
-                    <a href="#">View/Edit</a>
+                    <a href="/members/view">View/Edit</a>
                   </td>
                 </tr>
               ))}
