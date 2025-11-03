@@ -6,7 +6,11 @@ import Loans from "./pages/Loans";
 import Savings from "./pages/Savings";
 import Shares from "./pages/Shares";
 import Transactions from "./pages/Transactions";
-// import Settings from "./pages/Settings";
+import Kyc from "./pages/Kyc";
+import Report from "./pages/Report";
+import Users from "./pages/Users";
+
+import Settings from "./pages/Settings";
 
 function App() {
   const location = useLocation();
@@ -27,6 +31,12 @@ function App() {
         return "Shares Management";
       case "/transactions":
         return "Transactions";
+      case "/kyc":
+        return "KYC";
+      case "/report":
+        return "Report";
+      case "/user":
+        return "Users";
       case "/settings":
         return "System Settings";
       default:
@@ -43,7 +53,11 @@ function App() {
         <Route path="/savings" element={<Savings />} />
         <Route path="/shares" element={<Shares />} />
         <Route path="/transactions" element={<Transactions />} />
-        {/* <Route path="/settings" element={<Settings />} /> */}
+        <Route path="/kyc" element={<Kyc />} />
+        <Route path="/report" element={<Report />} />
+        <Route path="/user" element={<Users />} />
+
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </Layoutt>
   );

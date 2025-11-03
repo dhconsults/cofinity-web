@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       href: "/transactions",
     },
     { name: "KYC", icon: <Shield size={18} />, href: "/kyc" },
-    { name: "Reports", icon: <FileText size={18} />, href: "/reports" },
+    { name: "Report", icon: <FileText size={18} />, href: "/report" },
     { name: "Users", icon: <Users size={18} />, href: "/user" },
     { name: "Settings", icon: <Settings size={18} />, href: "/settings" },
   ];

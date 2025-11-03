@@ -78,10 +78,8 @@ const Transactions = () => {
     <div className="p-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between">
-        {/* Filters */}
         <div className="flex  justify-between gap-4">
           <div className="flex flex-wrap gap-4">
-            {/* Date Range */}
             <div className="relative">
               <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <select className="appearance-none border border-gray-300 rounded-lg py-2 pl-9 pr-8 text-sm text-gray-700 focus:ring-1 focus:ring-gray-300 focus:outline-none">
@@ -106,7 +104,7 @@ const Transactions = () => {
                 />
               </svg>
             </div>
-            {/* Status */}
+
             <div className="relative">
               <select className="appearance-none border border-gray-300 rounded-lg py-2 px-8 text-sm text-gray-700 focus:ring-1 focus:ring-gray-300 focus:outline-none">
                 <option>Status:</option>
@@ -130,7 +128,6 @@ const Transactions = () => {
               </svg>
             </div>
 
-            {/* Type */}
             <div className="relative">
               <select className="appearance-none border border-gray-300 rounded-lg py-2 px-8 text-sm text-gray-700 focus:ring-1 focus:ring-gray-300 focus:outline-none">
                 <option>Type:</option>
@@ -162,7 +159,7 @@ const Transactions = () => {
         </button>
       </div>
 
-      {/* Stats Cards */}
+      {/*  Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
         {[
           {
