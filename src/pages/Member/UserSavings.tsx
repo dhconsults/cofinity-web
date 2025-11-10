@@ -36,14 +36,8 @@ const UserSavings = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 flex flex-col gap-8 shadow-sm rounded-lg">
+    <div className="min-h-screen bg-gray-50 flex flex-col gap-8 mb-4 rounded-lg">
       {/* Header */}
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">My Savings</h1>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md">
-          + Add Savings
-        </button>
-      </header>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -128,13 +122,13 @@ const UserSavings = () => {
       </div>
 
       {/* Wallet Summary */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-2xl p-6 flex items-center justify-between shadow-lg">
+      <div className="bg-white text-gray-900 rounded-2xl p-6 flex items-center justify-between shadow">
         <div>
           <p className="text-sm opacity-80">Available Balance</p>
           <p className="text-3xl font-bold mt-1">₦120,000</p>
         </div>
         <div className="bg-white/20 p-4 rounded-full">
-          <Wallet className="w-7 h-7 text-white" />
+          <Wallet className="w-7 h-7 text-gray-900" />
         </div>
       </div>
     </div>

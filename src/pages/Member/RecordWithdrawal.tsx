@@ -2,25 +2,21 @@ import React, { useState } from "react";
 
 interface LoanFormData {
   fullName: string;
-  email: string;
+  accountNumber: string;
   phone: string;
   membershipId: string;
-  loanAmount: string;
-  loanPurpose: string;
-  repaymentPeriod: string;
-  incomeProof: File | null;
+  amountDeposited: string;
+  paymentProof: File | null;
 }
 
-export default function LoanApplicationForm() {
+const RecordWithdrawal = () => {
   const [formData, setFormData] = useState<LoanFormData>({
     fullName: "",
-    email: "",
+    accountNumber: "",
     phone: "",
     membershipId: "",
-    loanAmount: "",
-    loanPurpose: "",
-    repaymentPeriod: "",
-    incomeProof: null,
+    amountDeposited: "",
+    paymentProof: null,
   });
 
   const handleChange = (
@@ -34,7 +30,7 @@ export default function LoanApplicationForm() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
-    setFormData({ ...formData, incomeProof: file });
+    setFormData({ ...formData, paymentProof: file });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -50,7 +46,7 @@ export default function LoanApplicationForm() {
         className="w-full bg-white shadow-xl rounded-2xl p-8 space-y-6"
       >
         <h1 className="text-2xl font-bold text-black text-center">
-          Cooperative Loan Application
+          Withrawal Record Form
         </h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -70,12 +66,26 @@ export default function LoanApplicationForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Email
+              Membership ID
             </label>
             <input
-              type="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              name="membershipId"
+              value={formData.membershipId}
+              onChange={handleChange}
+              required
+              className="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-1 focus:ring-black focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Account Number
+            </label>
+            <input
+              type="text"
+              name="text"
+              value={formData.accountNumber}
               onChange={handleChange}
               required
               className="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-1 focus:ring-black focus:outline-none"
@@ -95,94 +105,22 @@ export default function LoanApplicationForm() {
               className="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-1 focus:ring-black focus:outline-none"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Membership ID
-            </label>
-            <input
-              type="text"
-              name="membershipId"
-              value={formData.membershipId}
-              onChange={handleChange}
-              required
-              className="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-1 focus:ring-black focus:outline-none"
-            />
-          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Loan Amount (₦)
+              Amount Withdraw (₦)
             </label>
             <input
               type="text"
               name="loanAmount"
-              value={formData.loanAmount}
+              value={formData.amountDeposited}
               onChange={handleChange}
               required
               className="w-full border border-gray-300 rounded-md p-2 focus:ring-1 focus:ring-black focus:outline-none"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Repayment Period
-            </label>
-            <select
-              name="repaymentPeriod"
-              value={formData.repaymentPeriod}
-              onChange={handleChange}
-              required
-              className="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-1 focus:ring-black focus:outline-none"
-            >
-              <option
-                value=""
-                className="text-sm font-medium text-gray-700 bg-gray-300"
-              >
-                Select...
-              </option>
-              <option
-                value="6 months"
-                className="text-sm font-medium text-gray-700"
-              >
-                6 Months
-              </option>
-              <option
-                value="12 months"
-                className="text-sm font-medium text-gray-700"
-              >
-                12 Months
-              </option>
-              <option
-                value="18 months"
-                className="text-sm font-medium text-gray-700"
-              >
-                18 Months
-              </option>
-              <option
-                value="24 months"
-                className="text-sm font-medium text-gray-700"
-              >
-                24 Months
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Loan Purpose
-          </label>
-          <textarea
-            name="loanPurpose"
-            value={formData.loanPurpose}
-            onChange={handleChange}
-            rows={3}
-            required
-            className="mt-1 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          />
         </div>
 
         <div>
@@ -208,4 +146,6 @@ export default function LoanApplicationForm() {
       </form>
     </div>
   );
-}
+};
+
+export default RecordWithdrawal;

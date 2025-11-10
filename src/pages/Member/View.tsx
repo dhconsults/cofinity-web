@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserSavings from "./UserSavings";
+import UserLoan from "./Userloan";
 
 const View = () => {
   const [image, setImage] = useState<string>(
@@ -690,7 +691,7 @@ const View = () => {
           {/* Theme & Customization */}
           {activeTab === "theme" && (
             <div>
-              <h1 className="text-2xl font-bold text-gray-800 mb-4">Loan</h1>
+              <UserLoan />
             </div>
           )}
         </main>

@@ -7,6 +7,13 @@ import View from "./pages/Member/View";
 // import Settings from "./pages/Settings";
 import AddNewMembers from "./pages/Member/AddNewMembers";
 import LoanApplicationForm from "./pages/Member/LoanApplicationForm";
+import Savings from "./pages/Savings";
+import Shares from "./pages/Shares";
+import Transactions from "./pages/Transactions";
+import LoanSettings from "./pages/Member/LoanSettings";
+import AddNewSharePlan from "./pages/Member/AddNewSharePlan";
+import RecordDeposit from "./pages/Member/RecordDeposit";
+import RecordWithdrawal from "./pages/Member/RecordWithdrawal";
 
 function App() {
   const location = useLocation();
@@ -48,10 +55,22 @@ function App() {
         <Route path="/loans" element={<Loans />} />
         <Route path="/members/view" element={<View />} />
         <Route path="/members/AddNewMembers" element={<AddNewMembers />} />
+        <Route path="/loans/LoanSettings" element={<LoanSettings />} />
+        <Route path="/Share/AddNewShareplan" element={<AddNewSharePlan />} />
         <Route
           path="/loans/LoanApplicationForm"
           element={<LoanApplicationForm />}
         />
+        <Route path="/Savings/RecordDeposit" element={<RecordDeposit />} />
+        <Route
+          path="/Savings/RecordWithdrawal"
+          element={<RecordWithdrawal />}
+        />
+        <Route path="/savings" element={<Savings />} />
+        <Route path="/shares" element={<Shares />} />
+        <Route path="/transactions" element={<Transactions />} />
+
+        {/* <Route path="/settings" element={<Settings />} /> */}
 
         {/* <Route path="/settings" element={<Settings />} /> */}
       </Routes>

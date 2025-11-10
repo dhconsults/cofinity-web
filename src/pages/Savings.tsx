@@ -27,6 +27,7 @@ import {
   UserCheck,
   BarChart3,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Savings = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -129,12 +130,18 @@ const Savings = () => {
       <main className="p-4 overflow-y-auto h-screen lg:h-auto">
         <div className="md:flex  items-center justify-between">
           <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <button className="gap-2 items-center flex bg-black rounded-lg py-2 px-4 hover:bg-blue-950 transition-colors cursor-pointer">
+            <Link
+              to="/Savings/RecordWithdrawal"
+              className="gap-2 items-center flex bg-black rounded-lg py-2 px-4 hover:bg-blue-950 transition-colors cursor-pointer"
+            >
               Record Withdrawal
-            </button>
-            <button className="flex items-center border-2 border-black py-2 px-4 rounded-lg gap-2 text-black cursor-pointer hover:border-blue-950 transition-colors">
+            </Link>
+            <Link
+              to="/Savings/RecordDeposit"
+              className="flex items-center border-2 border-black py-2 px-4 rounded-lg gap-2 text-black cursor-pointer hover:border-blue-950 transition-colors"
+            >
               Record Deposit
-            </button>
+            </Link>
           </div>
           <div className="">
             <button className="bg-black px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors">
