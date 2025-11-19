@@ -15,6 +15,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import CooperativeSelection from "./pages/CooperativeSelection";
 import CreateCooperative from "./pages/CreateCooperative";
+import UpgradePlan from "./pages/UpgradePlan";
+import ChoosePlan from "./pages/ChoosePlan";
 
 function App() {
   const location = useLocation();
@@ -52,6 +54,7 @@ function App() {
     "/signup",
     "/cooperative-selection",
     "/create-cooperative",
+    "/choose-plan",
   ].includes(location.pathname);
 
   return (
@@ -66,6 +69,8 @@ function App() {
             element={<CooperativeSelection />}
           />
           <Route path="/create-cooperative" element={<CreateCooperative />} />
+          <Route path="/choose-plan" element={<ChoosePlan />} />
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       ) : (
         <Layoutt navbarTitle={getNavbarTitle()}>
@@ -81,6 +86,7 @@ function App() {
             <Route path="/report" element={<Report />} />
             <Route path="/user" element={<Users />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/upgrade" element={<UpgradePlan />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </Layoutt>

@@ -87,7 +87,7 @@ const Users: React.FC = () => {
         <div className="mt-4 sm:mt-0 flex items-center gap-3">
           <button
             onClick={() => setIsAddDrawerOpen(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors cursor-pointer"
           >
             + Add Sub-Admin
           </button>
@@ -284,7 +284,7 @@ const Users: React.FC = () => {
                 >
                   Cancel
                 </button>
-                <button className="px-4 py-2 bg-indigo-600 text-white rounded-md">
+                <button className="px-4 py-2 bg-black cursor-pointer text-white rounded-md">
                   Save
                 </button>
               </div>

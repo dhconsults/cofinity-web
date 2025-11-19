@@ -1,12 +1,11 @@
 import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Home,
   Users,
   DollarSign,
   FileText,
   Settings,
-  UserCog,
   PiggyBank,
   Coins,
   Receipt,
@@ -21,6 +20,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
     { name: "Dashboard", icon: <Home size={18} />, href: "/dashboard" },
@@ -39,10 +39,20 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Settings", icon: <Settings size={18} />, href: "/settings" },
   ];
 
+  const handleLogout = () => {
+    // Clear authentication/session data
+    localStorage.removeItem("token"); // example: remove JWT token
+    // Optionally, clear other user data if needed
+    localStorage.removeItem("user");
+
+    // Navigate to login page
+    navigate("/login", { replace: true });
+  };
+
   return (
     <>
       <aside
-        className={`bg-black text-white w-64 p-6 flex flex-col justify-between fixed h-screen  lg:static inset-y-0 left-0 transform ${
+        className={`bg-black text-white w-64 p-6 flex flex-col justify-between fixed h-screen lg:static inset-y-0 left-0 transform ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0 transition-transform duration-300 ease-in-out z-40`}
       >
@@ -91,7 +101,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
           </nav>
         </div>
 
-        <button className="mt-6 px-4 py-2 rounded-lg bg-gray-900 border border-gray-800 hover:bg-gray-800 transition font-semibold flex items-center justify-center gap-2">
+        <button
+          onClick={handleLogout}
+          className="mt-6 px-4 py-2 rounded-lg bg-gray-900 border border-gray-800 hover:bg-gray-800 transition font-semibold flex items-center justify-center gap-2"
+        >
           <LogOut size={16} />
           Log out
         </button>

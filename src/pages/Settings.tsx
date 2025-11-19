@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Save, Settings as SettingsIcon, Upload } from "lucide-react";
+import ManageRoles from "./ManageRoles";
+import PermissionMatrix from "./PermissionMatrix";
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState("organization");
+  const [roleView, setRoleView] = useState<"manage" | "matrix">("manage");
   const [settings, setSettings] = useState({
     coopName: "",
     email: "",
@@ -324,21 +327,40 @@ const Settings: React.FC = () => {
 
         {/* Roles & Permissions */}
         {activeTab === "roles" && (
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
               Roles & Permissions
             </h1>
-            <p className="text-gray-700 mb-3">
+            <p className="text-gray-700 mb-4">
               Manage sub-admin access levels and responsibilities.
             </p>
-            <div className="flex gap-3">
-              <button className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors cursor-pointer">
+
+            {/* Sub-Tabs */}
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setRoleView("manage")}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  roleView === "manage"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
                 Manage Roles
               </button>
-              <button className="px-4 py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200">
+              <button
+                onClick={() => setRoleView("matrix")}
+                className={`px-4 py-2 rounded-md text-sm font-medium ${
+                  roleView === "matrix"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
                 Permission Matrix
               </button>
             </div>
+
+            {/* Render Sub-Page */}
+            {roleView === "manage" ? <ManageRoles /> : <PermissionMatrix />}
           </div>
         )}
 

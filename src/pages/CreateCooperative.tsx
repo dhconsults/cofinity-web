@@ -49,14 +49,14 @@ const CreateCooperative: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Basic validation
     if (!form.name || !form.email) {
       alert("Please complete all required fields");
       return;
     }
 
-    console.log("New Cooperative Data:", form);
-    alert("Cooperative created successfully!");
-    navigate("/dashboard");
+    // Navigate to ChoosePlan page instead of dashboard
+    navigate("/choose-plan", { state: { cooperative: form } });
   };
 
   return (

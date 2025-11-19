@@ -1,5 +1,14 @@
 import React from "react";
-import { Users, PiggyBank, Bell, Landmark, IdCard } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  PiggyBank,
+  Bell,
+  Landmark,
+  IdCard,
+  X,
+  TriangleAlert,
+} from "lucide-react";
 import {
   LineChart,
   Line,
@@ -12,6 +21,7 @@ import {
 } from "recharts";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const data = [
     { month: "Jan", savings: 3000, loans: 2000 },
     { month: "Feb", savings: 4000, loans: 2500 },
@@ -25,6 +35,16 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 overflow-y-auto h-screen lg:h-auto bg-gray-50">
+      <div className="bg-red-100 w-auto h-auto flex items-center justify-between border rounded-sm border-red-300 text-red-600 p-2 text-sm mb-4">
+        <div className="flex items-center gap-2">
+          <TriangleAlert size={14} />
+          <p>
+            Your active subcription expired 23days ago. Please renew to continue
+            this service
+          </p>
+        </div>
+        <X size={14} className="cursor-pointer" />
+      </div>
       {/* Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
@@ -73,82 +93,6 @@ const Dashboard = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-          <h3 className="font-bold text-lg text-white">
-            Savings & Loan Trend (Monthly)
-          </h3>
-          <div className="h-64 mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis
-                  dataKey="month"
-                  stroke="#9ca3af"
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1f2937",
-                    borderRadius: "8px",
-                    border: "none",
-                  }}
-                  labelStyle={{ color: "#fff" }}
-                  itemStyle={{ color: "#13ecb6" }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="savings"
-                  stroke="#13ecb6"
-                  strokeWidth={3}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="loans"
-                  stroke="#f59e0b"
-                  strokeWidth={3}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl border border-gray-200">
-          <h3 className="font-bold text-lg text-gray-900">
-            Loan Repayment Status
-          </h3>
-          <div className="h-64 mt-4 flex items-center justify-center">
-            <div className="relative w-48 h-48">
-              <svg className="w-full h-full" viewBox="0 0 36 36">
-                <path
-                  className="text-gray-200"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  strokeWidth="3"
-                ></path>
-                <path
-                  className="text-green-500"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831"
-                  fill="none"
-                  strokeDasharray="85, 100"
-                  strokeLinecap="round"
-                  strokeWidth="3"
-                ></path>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-gray-900">85%</span>
-                <span className="text-sm text-gray-500">Paid</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Quick Actions */}
@@ -235,38 +179,188 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Quick Action  */}
         <div className="bg-white shadow-sm rounded-xl p-4">
           <h3 className="font-bold text-lg text-black mb-4">Quick Action</h3>
-          <button className="bg-black text-white rounded-md py-2 w-full cursor-pointer mt-4 hover:bg-gray-900">
+
+          {/* Action buttons */}
+          <button className="bg-black text-white rounded-md py-2 w-full cursor-pointer mt-1 hover:bg-gray-900 transition-colors">
             + Add New Member
           </button>
-          <button className="bg-blue-100 text-blue-500 rounded-md w-full py-2 mt-4 cursor-pointer hover:bg-gray-200">
+
+          <button className="bg-blue-100 text-blue-500 rounded-md w-full py-2 mt-3 cursor-pointer hover:bg-blue-200 transition-colors">
             Approve Loan
           </button>
-          <button className="bg-blue-100 text-blue-500 rounded-md w-full py-2 mt-4 cursor-pointer hover:bg-gray-200">
+
+          <button className="bg-blue-100 text-blue-500 rounded-md w-full py-2 mt-3 cursor-pointer hover:bg-blue-200 transition-colors">
             Generate Report
           </button>
 
+          {/* Subscription Usage / Notifications */}
           <div className="mt-8">
             <h3 className="font-bold text-lg text-black mb-4">
-              Recent Notifications
+              Subscription Usage
             </h3>
-            {[
-              { text: "New member application received", date: "2024-07-15" },
-              { text: "Loan Repayment due for LN/001", date: "2024-07-15" },
-              {
-                text: "KYC approved for Michael Scoffield",
-                date: "2024-07-15",
-              },
-            ].map((n, i) => (
-              <div key={i} className="flex gap-4 mb-4">
-                <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0"></div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{n.text}</p>
-                  <p className="text-xs text-gray-500">{n.date}</p>
+
+            {/* Users usage */}
+            <div className="mb-5">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="text-gray-700" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Users
+                  </span>
                 </div>
+                <span className="text-sm font-medium text-gray-700">
+                  2 of 10 used
+                </span>
               </div>
-            ))}
+
+              <div className="w-full bg-gray-100 rounded-full h-3 mt-2 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${(2 / 10) * 100}%`,
+                    backgroundColor: "#0ea5a4",
+                  }}
+                  aria-hidden
+                />
+              </div>
+
+              <p className="text-xs text-gray-500 mt-2">
+                8 users remaining. Upgrade to increase user seats.
+              </p>
+            </div>
+
+            {/* Sub-admins usage */}
+            <div className="mb-5">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="text-gray-700" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Sub-Admins
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  3 of 5 used
+                </span>
+              </div>
+
+              <div className="w-full bg-gray-100 rounded-full h-3 mt-2 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${(3 / 5) * 100}%`,
+                    backgroundColor: "#ff7e1b",
+                  }}
+                  aria-hidden
+                />
+              </div>
+
+              <p className="text-xs text-gray-500 mt-2">
+                2 sub-admin slots remaining.
+              </p>
+            </div>
+
+            {/* Plan & CTA */}
+            <div className="border-t border-gray-100 pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Current plan</p>
+                  <p className="font-medium text-gray-800">
+                    Starter • ₦0 / month
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => navigate("/upgrade")}
+                  className="bg-black text-white px-3 py-2 rounded-md text-sm hover:bg-gray-900 transition-colors"
+                >
+                  Upgrade Plan
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 mt-3">
+                Upgrading increases user seats, sub-admin slots and unlocks
+                advanced features.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+          <h3 className="font-bold text-lg text-white">
+            Savings & Loan Trend (Monthly)
+          </h3>
+          <div className="h-64 mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis
+                  dataKey="month"
+                  stroke="#9ca3af"
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    borderRadius: "8px",
+                    border: "none",
+                  }}
+                  labelStyle={{ color: "#fff" }}
+                  itemStyle={{ color: "#13ecb6" }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="savings"
+                  stroke="#13ecb6"
+                  strokeWidth={3}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="loans"
+                  stroke="#f59e0b"
+                  strokeWidth={3}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl border border-gray-200">
+          <h3 className="font-bold text-lg text-gray-900">
+            Loan Repayment Status
+          </h3>
+          <div className="h-64 mt-4 flex items-center justify-center">
+            <div className="relative w-48 h-48">
+              <svg className="w-full h-full" viewBox="0 0 36 36">
+                <path
+                  className="text-gray-200"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  strokeWidth="3"
+                ></path>
+                <path
+                  className="text-green-500"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831"
+                  fill="none"
+                  strokeDasharray="85, 100"
+                  strokeLinecap="round"
+                  strokeWidth="3"
+                ></path>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-bold text-gray-900">85%</span>
+                <span className="text-sm text-gray-500">Paid</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

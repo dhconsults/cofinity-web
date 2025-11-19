@@ -144,13 +144,13 @@ const KYC = () => {
         <div className="flex gap-3">
           <button
             onClick={() => setTableView(!tableView)}
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition"
+            className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition"
           >
             {tableView ? "Back to Cards" : "View All"}
           </button>
-          <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition">
+          {/* <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition">
             + Add New KYC
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -232,7 +232,7 @@ const KYC = () => {
               {currentUsers.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-t hover:bg-gray-50 transition"
+                  className="border-t border-gray-200 hover:bg-gray-50 transition"
                 >
                   <td className="px-6 py-3 font-medium text-gray-900">
                     {user.name}
@@ -269,7 +269,7 @@ const KYC = () => {
           </table>
 
           {/* Pagination */}
-          <div className="flex justify-end items-center p-4 border-t">
+          <div className="flex justify-end items-center p-4 border-t border-gray-200 ">
             <div className="flex gap-2">
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
