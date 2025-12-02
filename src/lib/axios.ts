@@ -16,10 +16,12 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 419) {
-      // 419 = CSRF token mismatch or session expired
-      window.location.href = "/login";
-    }
+
+    console.error("API error:", error);
+    // if (error.response?.status === 401 || error.response?.status === 419) {
+    //   // 419 = CSRF token mismatch or session expired
+    //   window.location.href = "/login";
+    // }
     return Promise.reject(error);
   }
 );

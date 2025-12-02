@@ -150,12 +150,12 @@ return (
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-neutral-400" />
+                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-neutral-400" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="you@example.com"
-                      className="pl-10"
+                      className="pl-10 h-12 text-base"
                       disabled={isLoading}
                       {...register("email")}
                     />
@@ -168,19 +168,19 @@ return (
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-neutral-400" />
+                    <Lock className="  absolute left-3 top-3.5 h-5 w-5 text-neutral-400" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      className="pl-10 pr-10"
+                      className="pl-10 pr-10   h-12 text-base"
                       disabled={isLoading}
                       {...register("password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600"
+                      className="absolute right-3 top-3.5 text-neutral-400 hover:text-neutral-600"
                       disabled={isLoading}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
