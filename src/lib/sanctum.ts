@@ -1,5 +1,6 @@
 // src/lib/sanctum.ts
-import axios from "./axios";
+import api from "./axios";
+// import axios from "./axios";
 import { SANCTUM } from "@/constants/api";
 
 /**
@@ -8,7 +9,7 @@ import { SANCTUM } from "@/constants/api";
  */
 export const fetchCsrfToken = async (): Promise<void> => {
   try {
-    await axios.get(SANCTUM.CSRF_COOKIE);
+    await api.get(SANCTUM.CSRF_COOKIE);
   } catch (error) {
     console.error("Failed to fetch CSRF cookie:", error);
     throw error;

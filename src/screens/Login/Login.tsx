@@ -47,8 +47,8 @@ const Login: React.FC = () => {
 
     try {
       // 1. Fetch CSRF cookie (critical for Sanctum)
-     const res =  await fetchCsrfToken();
-     console.log("CSRF token fetched:", res);
+    //  const res =  await fetchCsrfToken();
+    //  console.log("CSRF token fetched:", res);
 
       // 2. Call your auth context login
       await login(data.email, data.password);
