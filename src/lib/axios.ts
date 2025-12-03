@@ -7,7 +7,7 @@ const api = axios.create({
   withCredentials: true, // Critical for Sanctum cookies
   headers: {
      Accept: "application/json",
-    "X-Requested-With": "XMLHttpRequest", 
+    "X-Requested-With": "XMLHttpRequest",
  
 
   },
@@ -16,7 +16,6 @@ const api = axios.create({
 // Optional: Global response interceptor (401 → auto logout)
 api.interceptors.response.use(
   (response) => response,
-  
   (error) => {
 
     console.error("API error:", error);
