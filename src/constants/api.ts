@@ -12,6 +12,7 @@ export const SANCTUM = {
 // Auth
 export const AUTH_API = {
   LOGIN: `${API_BASE}/api/auth/login`,
+  FORGOT_PASSWORD: `${API_BASE}/api/auth/forgot-password`,
   REGISTER: `${API_BASE}/api/auth/register`,
   VERIFY_EMAIL: `${API_BASE}/api/auth/verify-email`,
   RESEND_VERIFICATION: `${API_BASE}/api/auth/resend-verification`,

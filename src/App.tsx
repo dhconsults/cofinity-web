@@ -21,12 +21,9 @@ import UpgradePlan from "./pages/UpgradePlan";
 import { Toaster } from "sonner";
 import VerifyEmail from "./screens/Register/VerifyEmail";
 import Layout from "./screens/protected/layout";
-import ProtectedRoute from "./screens/ProtectedRoute";
-import CreateCooperative from "./screens/CreateCooperative/CreateCooperative";
-import RouteProtected from "./screens/Register/RouteProtected";
 import ChoosePlan from "./screens/CreateCooperative/SelectPlan";
 import CooperativeSelection from "./screens/CreateCooperative/CooperativeSelection";
- 
+
 function App() {
   const location = useLocation();
 
@@ -82,15 +79,11 @@ function App() {
     "/signup",
     "/verify-email",
 
-
     "/verify-login",
-    "/cooperative-selection", 
+    "/cooperative-selection",
     "/create-cooperative",
-    "/choose-plan"
-    ].includes(location.pathname);
-
-  
- 
+    "/choose-plan",
+  ].includes(location.pathname);
 
   return (
     <>
@@ -107,61 +100,73 @@ function App() {
 
             <Route path="*" element={<Navigate to="/login" />} />
 
-
-
-              <Route path="/verify-login" element={<RouteProtected><VerifyLogin /></RouteProtected>} />
-             <Route path="/cooperative-selection" element={<RouteProtected><CooperativeSelection /></RouteProtected>} />
-             <Route path="/create-cooperative" element={<RouteProtected><CreateCooperative /></RouteProtected>} /> 
-             <Route path="/choose-plan" element={<RouteProtected><ChoosePlan/></RouteProtected>} />
-
-
-
-             
-
-             
- 
-
-
+            <Route
+              path="/verify-login"
+              element={
+                <RouteProtected>
+                  <VerifyLogin />
+                </RouteProtected>
+              }
+            />
+            <Route
+              path="/cooperative-selection"
+              element={
+                <RouteProtected>
+                  <CooperativeSelection />
+                </RouteProtected>
+              }
+            />
+            <Route
+              path="/create-cooperative"
+              element={
+                <RouteProtected>
+                  <CreateCooperative />
+                </RouteProtected>
+              }
+            />
+            <Route
+              path="/choose-plan"
+              element={
+                <RouteProtected>
+                  <ChoosePlan />
+                </RouteProtected>
+              }
+            />
           </Routes>
         </>
       ) : (
+        <ProtectedRoute>
+          <Layout navbarTitle={getNavbarTitle()}>
+            <Routes>
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/members" element={<Member />} />
+              <Route path="/loans" element={<Loans />} />
+              <Route path="/savings" element={<Savings />} />
+              <Route path="/shares" element={<Shares />} />
+              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/kyc" element={<Kyc />} />
+              <Route path="/report" element={<Report />} />
+              <Route path="/user" element={<Users />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/upgrade" element={<UpgradePlan />} />
 
-      <ProtectedRoute>
-
-         
-
-
-        <Layout navbarTitle={getNavbarTitle()}>
-          <Routes>
-            {/* Dashboard Routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/members" element={<Member />} />
-            <Route path="/loans" element={<Loans />} />
-            <Route path="/savings" element={<Savings />} />
-            <Route path="/shares" element={<Shares />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/kyc" element={<Kyc />} />
-            <Route path="/report" element={<Report />} />
-            <Route path="/user" element={<Users />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/upgrade" element={<UpgradePlan />} />
-
-          
-
-            {/* <Route
+              {/* <Route
               path="/cooperative-selection"
               element={<CooperativeSelection />}
             />
             <Route path="/create-cooperative" element={<CreateCooperative />} />
             <Route path="/choose-plan" element={<ChoosePlan />} /> */}
 
-            <Route path="*" element={<Navigate to="/dashboard" />} />
-          </Routes>
-        </Layout>
-
-
-        </ProtectedRoute> 
+              {/* <Route path="*" element={<Navigate to="/dashboard" />} /> */}
+            </Routes>
+          </Layout>
+        </ProtectedRoute>
       )}
+
+      {/* <Routes>
+        <Route path="*" element={<NotFound />} />
+      </Routes> */}
     </>
   );
 }
