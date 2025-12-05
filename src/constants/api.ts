@@ -16,15 +16,16 @@ export const AUTH_API = {
   REGISTER: `${API_BASE}/api/auth/register`,
   VERIFY_EMAIL: `${API_BASE}/api/auth/verify-email`,
   RESEND_VERIFICATION: `${API_BASE}/api/auth/resend-verification`,
-  VERIFY_LOGIN_CODE: `${API_BASE}/api/auth/verify-login`,
-  RESEND_LOGIN_CODE: `${API_BASE}/api/auth/resend-login-code`,
+  VERIFY_LOGIN_CODE: `${API_BASE}/api/verify-login`,
+  RESEND_LOGIN_CODE: `${API_BASE}/api/resend-login-code`,
   LOGOUT: `${API_BASE}/api/auth/logout`,
   ME: `${API_BASE}/api/me`, // or /api/tenant if you return tenant + user together
 };
 
 // Tenant (since every user belongs to exactly one tenant)
 export const TENANT_API = {
-  CURRENT: `${API_BASE}/api/tenant`,
+  TENANT: `${API_BASE}/api/tenant`,
+  CREATE_TENANT: `${API_BASE}/api/tenants/create`
 };
 
 // Members

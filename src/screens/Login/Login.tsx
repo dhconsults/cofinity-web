@@ -18,7 +18,7 @@ import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fetchCsrfToken } from "@/lib/sanctum";
+ 
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
       // Save email for VerifyLogin page
       localStorage.setItem("verifyEmail", data.email);
 
-      toast.success("Login successful, verify email");
+      toast.success("Login successful, verify Your login to continue");
 
       navigate("/verify-login"); // <-- redirect here
     } catch (error: any) {

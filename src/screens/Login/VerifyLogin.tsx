@@ -11,24 +11,41 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { fetchCsrfToken } from "@/lib/sanctum";
+import { useNavigate } from "react-router-dom"; 
 import { AUTH_API } from "@/constants/api";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/axios";
-import { useSignupFlowStore } from "@/stores/useSignupFlowStore";
+import { saveData } from "@/lib/storageHelper";
 
 const VerifyLogin: React.FC = () => {
   const navigate = useNavigate();
-  const { email, setEmail, clear } = useSignupFlowStore();
+ 
+  const {logout, user, tenants, isAuthenticated } = useAuth(); 
+
+ 
+
+
+  const email = user?.email; 
+
 
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
+   
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+
+  useEffect(()=> { 
+    if(!isAuthenticated){ 
+
+      toast.error("You must be logged in to access this page.");
+
+      navigate('/login')
+    }
+
+  }, [isAuthenticated, navigate])
 
   // Countdown timer
   useEffect(() => {
@@ -104,20 +121,40 @@ const VerifyLogin: React.FC = () => {
         code: verificationCode,
       });
 
-      toast.success("Email verified successfully!", {
-        description: "Welcome to Cofinity! Redirecting...",
-        duration: 3000,
-      });
+      
 
       // Trigger user fetch via login (or refetchUser)
       // Since user might not be logged in yet, we'll redirect and let AuthContext handle it
 
       //check if user has tenant get cooperative
 
-      navigate("/create-cooperative", { replace: true });
+      await saveData('isLoginVerified', true);
+
+      
+
+      console.log("this is tenant", tenants);
+
+     if(tenants != null && tenants.length >  0){
+
+       navigate('/cooperative-selection')
+
+      
+    
+     }else{ 
+      
+       navigate('/create-cooperative')
+
+     }
+ 
+
+
+      
+
+    //  navigate("/create-cooperative", { replace: true });
     } catch (error: any) {
+ 
       const message =
-        error.response?.response?.data?.message ||
+        error.response?.data?.message ||
         "Invalid or expired verification code.";
 
       toast.error("Verification failed", { description: message });
@@ -153,8 +190,20 @@ const VerifyLogin: React.FC = () => {
     }
   };
 
-  const handleBack = () => {
-    navigate("/login");
+  const handleBack = async () => {
+
+    await logout()
+
+      toast.success("Logged out successfully!", {
+        description: `You have been logged out.`,
+      });
+
+      //fake a litle delay 
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+
+
+    // navigate("/login");
   };
 
   return (
@@ -162,7 +211,7 @@ const VerifyLogin: React.FC = () => {
       <div className="w-full max-w-md">
         <Button variant="ghost" className="mb-6 -ml-2" onClick={handleBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+          Logout
         </Button>
 
         <Card className="border-neutral-100 shadow-sm">
@@ -176,52 +225,13 @@ const VerifyLogin: React.FC = () => {
                 Verify your email
               </CardTitle>
               <CardDescription className="mt-2">
-                We've sent a 6-digit verification code to
+                We've sent a 6-digit verification code to 
+                <b> {email} </b> 
               </CardDescription>
             </div>
 
             {/* Email display/edit */}
-            {!isEditingEmail ? (
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <span className="font-medium text-neutral-900">{email}</span>
-                <Button
-                  variant="link"
-                  className="h-auto p-0 text-xs"
-                  onClick={() => setIsEditingEmail(true)}
-                >
-                  Edit
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Input
-                  type="email"
-                  value={email || ""}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter new email"
-                  className="text-center"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      setIsEditingEmail(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1 bg-black hover:bg-neutral-800"
-                    onClick={handleUpdateEmail}
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-            )}
+           
           </CardHeader>
 
           <CardContent className="space-y-6">
@@ -267,7 +277,7 @@ const VerifyLogin: React.FC = () => {
               ) : (
                 <>
                   <CheckCircle2 className="mr-2 h-5 w-5" />
-                  Verify Email
+                  Verify Login
                 </>
               )}
             </Button>
@@ -299,10 +309,7 @@ const VerifyLogin: React.FC = () => {
               <p className="text-xs text-neutral-600">
                 Tip: You can paste the entire 6-digit code
               </p>
-              <p className="text-xs text-neutral-500">
-                For testing, use:{" "}
-                <span className="font-mono font-semibold">123456</span>
-              </p>
+             
             </div>
           </CardContent>
         </Card>

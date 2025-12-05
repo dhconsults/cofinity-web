@@ -26,3 +26,4 @@ localhost+2-key.pem
 .gitignore
 localhost+2.pem
 .env.development
+vite.config.ts

@@ -13,7 +13,7 @@ import type { User } from "@/types/auth.types";
 
 type AuthState = {
   user: User | null;
-  tenant: Tenant | null;
+  tenants: Tenant[] | null;
   isLoading: boolean;
   isAuthenticated: boolean;
 };
@@ -29,7 +29,7 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
-    tenant: null,
+    tenants: null,
     isLoading: true,
     isAuthenticated: false,
   });
@@ -42,9 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     "/login",
     "/signup", 
     "/verify-email",
-    "/cooperative-selection",
-    "/create-cooperative",
-    "/choose-plan",
+  
   ];
 
   const isGuestPath = guestPaths.includes(location.pathname);
@@ -53,11 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUser = async () => {
     try {
       const response = await api.get(AUTH_API.ME);
-      const { user, tenant } = response.data;
+      const { user,tenants } = response.data;
+
+
+        
 
       setState({
         user,
-        tenant,
+        tenants,
         isLoading: false,
         isAuthenticated: true,
       });
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error.response?.status === 401 || error.response?.status === 419) {
         setState({
           user: null,
-          tenant: null,
+          tenants: null,
           isLoading: false,
           isAuthenticated: false,
         });
@@ -81,7 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchCsrfToken();
     await api.post(AUTH_API.LOGIN, { email, password });
 
-    await fetchUser(); // Now safe to fetch
+      await fetchUser();  
+ 
     queryClient.invalidateQueries();
   };
 
@@ -94,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setState({
         user: null,
-        tenant: null,
+        tenants: null,
         isLoading: false,
         isAuthenticated: false,
       });

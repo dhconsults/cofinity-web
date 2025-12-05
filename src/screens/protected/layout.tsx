@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { getData } from "@/lib/storageHelper";
 
 interface ProtectedLayoutProps {
   children: ReactNode;
@@ -19,14 +20,33 @@ export default function ProtectedLayout({ children, navbarTitle }: ProtectedLayo
   const { isLoading, isAuthenticated } = useAuth();
   const router = useNavigate();
 
+  //check if user has verify login ? 
+
+      const res = getData('isLoginVerified');
+ 
+
+
   // Redirect to login when the auth state is known and the user is unauthenticated.
   // Do this inside useEffect so we don't perform navigation during render
   // (which causes the "Cannot update a component while rendering a different component" error).
   useEffect(() => {
+
+
+
     if (!isLoading && !isAuthenticated) {
       router("/login", { replace: true });
     }
-  }, [isLoading, isAuthenticated, router]);
+
+
+
+ 
+
+  if(res == false || res == null &&  !isLoading){ 
+    router('verify-login', {replace:true})
+  }
+  
+
+  }, [isLoading, isAuthenticated, router, res]);
 
   const getNavbarTitle = () => {
     // This matches your original App.tsx logic
