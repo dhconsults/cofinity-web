@@ -23,6 +23,7 @@ import ChoosePlan from "./pages/ChoosePlan";
 import { Toaster } from "sonner";
 import VerifyEmail from "./screens/Register/VerifyEmail";
 import Layout from "./screens/protected/layout";
+import NotFound from "./screens/NotFound";
 
 function App() {
   const location = useLocation();
@@ -126,10 +127,14 @@ function App() {
             <Route path="/create-cooperative" element={<CreateCooperative />} />
             <Route path="/choose-plan" element={<ChoosePlan />} />
 
-            <Route path="*" element={<Navigate to="/dashboard" />} />
+            {/* <Route path="*" element={<Navigate to="/dashboard" />} /> */}
           </Routes>
         </Layout>
       )}
+
+      {/* <Routes>
+        <Route path="*" element={<NotFound />} />
+      </Routes> */}
     </>
   );
 }
