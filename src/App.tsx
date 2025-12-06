@@ -23,6 +23,9 @@ import VerifyEmail from "./screens/Register/VerifyEmail";
 import Layout from "./screens/protected/layout";
 import ChoosePlan from "./screens/CreateCooperative/SelectPlan";
 import CooperativeSelection from "./screens/CreateCooperative/CooperativeSelection";
+import RouteProtected from "./screens/Register/RouteProtected";
+import CreateCooperative from "./screens/CreateCooperative/CreateCooperative";
+import ProtectedRoute from "./screens/ProtectedRoute";
 
 function App() {
   const location = useLocation();
@@ -135,7 +138,7 @@ function App() {
           </Routes>
         </>
       ) : (
-        <ProtectedRoute>
+        <ProtectedRoute requireCooperative={true}>
           <Layout navbarTitle={getNavbarTitle()}>
             <Routes>
               {/* Dashboard Routes */}

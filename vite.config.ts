@@ -26,12 +26,12 @@ export default defineConfig({
     // },
     proxy: {
       '/sanctum': {
-        target: 'http://10.200.151.236:8000',
+        target: 'http://10.140.187.236:8000',
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://10.200.151.236:8000',
+        target: 'http://10.140.187.236:8000',
         changeOrigin: true,
         secure: false,
       

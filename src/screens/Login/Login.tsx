@@ -86,8 +86,9 @@ const Login: React.FC = () => {
 
       navigate("/verify-login"); // <-- redirect here
     } catch (error: any) {
+    
       toast.error("Login failed", {
-        description: error.response?.data?.message || "Invalid credentials",
+        description: error.response?.data?.message || error.message || "Invalid credentials",
       });
     } finally {
       setIsLoading(false);

@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import type { Tenant } from "@/types/tenant.types";
+import { Button } from "@/components/ui/button";
 
 
 export default function CooperativeSelection() {
@@ -14,7 +15,7 @@ export default function CooperativeSelection() {
 
 
   // Mock data - replace with actual data from useAuth
- const {tenants} = useAuth(); 
+ const {tenants, user} = useAuth(); 
   
 
   const getStatusStyle = (status: string) => {
@@ -166,7 +167,7 @@ export default function CooperativeSelection() {
                       </div>
 
                       {/* Plan Status Warning */}
-                      {tenant.plan_id == null && (
+                      {tenant.status == 'pending_payment' && (
                         <div className="mt-4 pt-4 border-t border-gray-100">
                           <div className="text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded-md flex items-center gap-2">
                             <Clock className="w-4 h-4 flex-shrink-0" />
@@ -236,19 +237,19 @@ export default function CooperativeSelection() {
         </div>
 
         {/* Continue Button */}
-        <button
-          onClick={handleContinue}
-          className="w-full bg-gray-900 text-white hover:bg-gray-800 py-3 rounded-lg font-semibold text-sm shadow-lg transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-xl active:scale-95"
-        >
-          Continue
+          <Button     onClick={handleContinue} className="w-full py-5 text-sm font-bold rounded-lg " >
+              Continue
           <ArrowRight className="w-4 h-4" />
-        </button>
+
+
+            </Button>
+  
 
         {/* Footer Info */}
         <div className="mt-6 pt-6 border-t border-gray-200">
           <p className="text-center text-xs text-gray-600">
             Logged in as{" "}
-            <span className="font-semibold text-gray-900">admin@cofinity.com</span>
+            <span className="font-semibold text-gray-900"> {user?.email} </span>
           </p>
           <p className="text-center text-xs text-gray-500 mt-2">
             Need help?{" "}

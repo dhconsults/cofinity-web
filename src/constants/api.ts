@@ -25,12 +25,17 @@ export const AUTH_API = {
 // Tenant (since every user belongs to exactly one tenant)
 export const TENANT_API = {
   TENANT: `${API_BASE}/api/tenant`,
-  CREATE_TENANT: `${API_BASE}/api/tenants/create`
+  CREATE_TENANT: `${API_BASE}/api/tenants/create`,
+  TENANT_STATUS: (id: string | number) => `${API_BASE}/api/tenants/${id}/status`,
 };
 
+// Usage:
+ 
 
 export const APIS = { 
   GET_PLANS: `${API_BASE}/api/plans`,
+  SUBSCRIPTION: `${API_BASE}/api/subscription`,
+  SUBSCRIPTION_INITIATE: `${API_BASE}/api/subscription/initiate`
 }
 
 // Members
