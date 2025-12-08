@@ -44,6 +44,9 @@ export const MEMBERS_API = {
   LIST: `${API_BASE}/api/members`,
   CREATE: `${API_BASE}/api/members`,
   SHOW: (id: string | number) => `${API_BASE}/api/members/${id}`,
+  TRANSACTIONS: (id: string| number) => `${API_BASE}/api/members/${id}/transactions`,
+  LOANS:(id: string | number ) => `${API_BASE}/api/members/${id}/loans`,
+  KYCUPLOAD(id:string|number) => `${API_BASE}/api/members/${id}/kyc`,
   UPDATE: (id: string | number) => `${API_BASE}/api/members/${id}`,
   DELETE: (id: string | number) => `${API_BASE}/api/members/${id}`,
 };

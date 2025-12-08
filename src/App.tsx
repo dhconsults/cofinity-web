@@ -29,6 +29,7 @@ import ProtectedRoute from "./screens/ProtectedRoute";
 import BranchesManagement from "./screens/protected/branches/Branches";
 import Members from "./screens/protected/members/Members";
 import AddMember from "./screens/protected/members/AddMember";
+import ViewMember from "./screens/protected/members/member/View";
 
 function App() {
   const location = useLocation();
@@ -149,6 +150,7 @@ function App() {
               <Route path="/branches" element={<BranchesManagement />} />
               <Route path="/members" element={<Members />} />
               <Route path="/add-member" element={<AddMember />} />
+              <Route path="/members/:id" element={<ViewMember />} />
               <Route path="/loans" element={<Loans />} />
               <Route path="/savings" element={<Savings />} />
               <Route path="/shares" element={<Shares />} />

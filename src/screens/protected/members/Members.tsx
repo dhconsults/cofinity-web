@@ -71,6 +71,10 @@ export default function Members() {
     navigate('/add-member')
   }
 
+  const handleviewmember = (id:number) => { 
+    navigate(`/members/${id}`)
+  }
+
   return (
     <div className="min-h-screen bg-neutral-50 p-4 md:p-6 lg:p-8">
       <div className=" mx-auto space-y-8">
@@ -160,9 +164,10 @@ export default function Members() {
               <p className="text-neutral-600">Try adjusting your search</p>
             </div>
           ) : (
-            <Table>
+            <Table  >
               <TableHeader>
                 <TableRow>
+                  <TableHead> S/N  </TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>ID</TableHead>
                   <TableHead>Type</TableHead>
@@ -173,8 +178,9 @@ export default function Members() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMembers.map((member) => (
+                {filteredMembers.map((member, i) => (
                   <TableRow key={member.id}>
+                    <TableCell >{ i + 1 }</TableCell>
                     <TableCell className="font-medium">
                       {member.first_name} {member.last_name}
                     </TableCell>
@@ -194,8 +200,8 @@ export default function Members() {
                       {format(new Date(member.created_at), "MMM d, yyyy")}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
+                      <Button variant="primary" size="sm" onClick={()=> handleviewmember(member.id) }>
+                        View <Eye className="w-4 h-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
