@@ -4,12 +4,11 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 // import fs from 'fs';
 
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
 
-    server: {
+  server: {
     // https: {
     //    key: fs.readFileSync(path.resolve(__dirname, 'localhost+2-key.pem')),
     //   cert: fs.readFileSync(path.resolve(__dirname, 'localhost+2.pem')),
@@ -25,29 +24,23 @@ export default defineConfig({
     //   // add more if needed
     // },
     proxy: {
-      '/sanctum': {
-        target: 'http://192.168.0.198:8000',
+      "/sanctum": {
+        target: "http://192.168.0.197:8000",
         changeOrigin: true,
         secure: false,
       },
-      '/api': {
-        target: 'http://192.168.0.198:8000',
+      "/api": {
+        target: "http://192.168.0.197:8000",
         changeOrigin: true,
         secure: false,
-      
       },
-    
     },
-    
+
     host: true,
-
-
-    },
- resolve: {
+  },
+  resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
   },
-
-
 });
