@@ -1,8 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 // import Layoutt from "./components/Layoutt";
 import Dashboard from "./pages/Dashboard";
-
-import Loans from "./pages/Loans";
 import Savings from "./pages/Savings";
 import Shares from "./pages/Shares";
 import Transactions from "./pages/Transactions";
@@ -30,7 +28,10 @@ import BranchesManagement from "./screens/protected/branches/Branches";
 import Members from "./screens/protected/members/Members";
 import AddMember from "./screens/protected/members/AddMember";
 import ViewMember from "./screens/protected/members/member/View";
-
+import LoansPage from "./screens/protected/loans/Loans";
+import LoanSettingsPage from "./screens/protected/loans/LoanPageSetting";
+import SavingsSettingsPage from "./screens/protected/savings/SavingsSettingPage";
+ 
 function App() {
   const location = useLocation();
 
@@ -151,8 +152,11 @@ function App() {
               <Route path="/members" element={<Members />} />
               <Route path="/add-member" element={<AddMember />} />
               <Route path="/members/:id" element={<ViewMember />} />
-              <Route path="/loans" element={<Loans />} />
+              <Route path="/loans" element={<LoansPage />} />
+              <Route path="/loan-product" element={<LoanSettingsPage />} />
               <Route path="/savings" element={<Savings />} />
+              <Route path="/savings-product" element={<SavingsSettingsPage /> } /> 
+
               <Route path="/shares" element={<Shares />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/kyc" element={<Kyc />} />

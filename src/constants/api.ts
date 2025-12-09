@@ -50,9 +50,35 @@ export const MEMBERS_API = {
   KYCUPLOAD: (id: string| number) => `${API_BASE}/api/members/${id}/kyc`,
   SENDEMAIL: (id: string | number) => `${API_BASE}/api/members/${id}/email`,
   SENDSMS: (id: string | number) => `${API_BASE}/api/members/${id}/sms`,
-  UPDATE: (id: string | number) => `${API_BASE}/api/members/${id}`,
+  // UPDATE: (id: string | number) => `${API_BASE}/api/members/${id}`,
   DELETE: (id: string | number) => `${API_BASE}/api/members/${id}`,
 };
+
+
+export const LOANPRODUCT_API = { 
+ LIST : `${API_BASE}/api/loan-products`,
+ CREATE : `${API_BASE}/api/loan-products`,
+ SHOW : (id: string | number) => `${API_BASE}/api/loan-products/${id}`,
+ UPDATE : (id: string | number) => `${API_BASE}/api/loan-products/${id}`,
+ DELETE : (id: string | number) => `${API_BASE}/api/loan-products/${id}`,
+ QUOTA : `${API_BASE}/api/loan-products-quota`,
+ TOGGLE : (id: string | number ) => `${API_BASE}/api/loan-products/${id}/toggle`,
+
+ 
+
+}
+export const SAVINGPRODUCT_API = { 
+ LIST : `${API_BASE}/api/savings-products`,
+ CREATE : `${API_BASE}/api/savings-products`,
+ SHOW : (id: string | number) => `${API_BASE}/api/savings-products/${id}`,
+ UPDATE : (id: string | number) => `${API_BASE}/api/savings-products/${id}`,
+ DELETE : (id: string | number) => `${API_BASE}/api/savings-products/${id}`,
+ QUOTA : `${API_BASE}/api/savings-products-quota`,
+ TOGGLE : (id: string | number ) => `${API_BASE}/api/savings-products/${id}/toggle`,
+
+ 
+
+}
 
 export const BRANCH_API = { 
   LIST: `${API_BASE}/api/branches`,

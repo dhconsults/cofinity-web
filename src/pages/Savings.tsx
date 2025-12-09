@@ -27,8 +27,13 @@ import {
   UserCheck,
   BarChart3,
 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 
 const Savings = () => {
+
+  const navigate = useNavigate(); 
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const menuItems = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} /> },
@@ -137,9 +142,9 @@ const Savings = () => {
             </button>
           </div>
           <div className="">
-            <button className="bg-black px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors">
+            <Button onClick={() => navigate('/savings-product')} className="bg-black px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors">
               <a href=""> Manage Savings Product</a>
-            </button>
+            </Button>
           </div>
         </div>
 

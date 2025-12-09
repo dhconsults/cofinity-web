@@ -3,6 +3,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* font  */
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/src/assets/font/Inter/static/Inter_24pt-Regular.ttf') format('truetype'); 
+  font-weight: normal;
+  font-style: normal;
+}
+
+*{
+  font-family: 'Inter', sans-serif;
+}
+
+
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
