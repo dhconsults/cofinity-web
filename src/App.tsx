@@ -32,6 +32,8 @@ import LoanSettingsPage from "./screens/protected/loans/LoanPageSetting";
 import SavingsSettingsPage from "./screens/protected/savings/SavingsSettingPage";
 import Savings from "./screens/protected/savings/Savings";
 import SavingsAccountDetail from "./screens/protected/savings/SavingsAccountDetail";
+import UpcomingPaymentsPage from "./screens/protected/upcomingPayments/UpcomingPaymentsPage";
+import LoanRepaymentPage from "./screens/protected/loanRepayment/LoanRepaymentPage";
  
 function App() {
   const location = useLocation();
@@ -166,6 +168,10 @@ function App() {
               <Route path="/user" element={<Users />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/upgrade" element={<UpgradePlan />} />
+
+
+              <Route path="/upcoming-payments" element={<UpcomingPaymentsPage />} /> 
+              <Route path="/loan-repayments" element={<LoanRepaymentPage />} /> 
 
               {/* <Route
               path="/cooperative-selection"
