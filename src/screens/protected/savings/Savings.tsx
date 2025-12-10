@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
-    Search,
-    PiggyBank,
-    UserCheck,
-    BarChart3,
-    Plus,
-    Eye,
-    ArrowDownRight,
-    Calculator,
-    ArrowUpRight
+  Search,
+  PiggyBank,
+  UserCheck,
+  BarChart3,
+  Plus,
+  Eye,
+  ArrowDownRight,
+  Calculator,
+  ArrowUpRight
 } from "lucide-react";
 
 import { apiClient } from "@/lib/api-client";
@@ -36,36 +36,36 @@ import { Textarea } from "@/components/ui/textarea";
 import { MemberSearchSelect } from "@/screens/Components/MemberSearchSelect";
 
 interface Summary {
-    total_balance: number;
-    members_with_savings: number;
-    average_balance: number;
+  total_balance: number;
+  members_with_savings: number;
+  average_balance: number;
 }
 
 interface SavingsAccount {
-    id: string;
-    
-    account_number: string;
-    product_name: string;
-    bank_name: string;
-    available_balance: string;
-    opened_at: string;
-    updated_at: string;
+  id: string;
+
+  account_number: string;
+  product_name: string;
+  bank_name: string;
+  available_balance: string;
+  opened_at: string;
+  updated_at: string;
 
 
-    balance: number;
-    last_activity: string;
-    status: "active" | "inactive" | "dormant" | "closed";
-    member: {
-        id: number | string, 
-        name: string,
-    }
-    product: { 
-        id: number | string, 
-        name: string,
-    }
+  balance: number;
+  last_activity: string;
+  status: "active" | "inactive" | "dormant" | "closed";
+  member: {
+    id: number | string,
+    name: string,
+  }
+  product: {
+    id: number | string,
+    name: string,
+  }
 }
 
-   
+
 interface MemberBankAccount {
   id: string;
   bank_name: string;
@@ -75,18 +75,18 @@ interface MemberBankAccount {
 
 // Validation Schemas
 const createSchema = z.object({
-    member_id: z.string().min(1, "Select a member"),
-    savings_product_id: z.string().min(1, "Select a product"),
-    opening_balance: z.number().min(0, "Opening balance must be ≥ 0"),
-    description: z.string().optional(),
-    branch_id: z.string().optional(),
+  member_id: z.string().min(1, "Select a member"),
+  savings_product_id: z.string().min(1, "Select a product"),
+  opening_balance: z.number().min(0, "Opening balance must be ≥ 0"),
+  description: z.string().optional(),
+  branch_id: z.string().optional(),
 });
 
 const calcSchema = z.object({
-    product_id: z.string().min(1, "Select a product"),
-    balance: z.number().min(0, "Enter valid balance"),
-    duration: z.number().min(1, "Enter duration"),
-    period: z.enum(["days", "months", "years"]),
+  product_id: z.string().min(1, "Select a product"),
+  balance: z.number().min(0, "Enter valid balance"),
+  duration: z.number().min(1, "Enter duration"),
+  period: z.enum(["days", "months", "years"]),
 });
 
 
@@ -97,7 +97,7 @@ const transactionSchema = z.object({
   member_bank_account_id: z.string().optional(), // only for withdrawal
 });
 
- 
+
 
 export default function Savings() {
   const navigate = useNavigate();
@@ -132,6 +132,16 @@ export default function Savings() {
         .then((res) => res),
   });
 
+
+  const { data: quota } = useQuery({
+    queryKey: ["savings-account-quota"],
+    queryFn: () => apiClient.get(SAVINGACCOUNT_API.QUOTA).then((res) => res.data),
+  });
+
+
+
+
+
   const accounts: SavingsAccount[] = accountsResponse?.data || [];
   const totalPages = accountsResponse?.meta?.last_page || 1;
 
@@ -151,7 +161,7 @@ export default function Savings() {
   }, [selectedAccount, withdrawalOpen]);
 
   // Forms
-  const createForm  = useForm<z.infer<typeof createSchema>>({
+  const createForm = useForm<z.infer<typeof createSchema>>({
     resolver: zodResolver(createSchema),
     defaultValues: { opening_balance: 0 },
   });
@@ -265,19 +275,14 @@ export default function Savings() {
     );
   };
 
+  const canCreate = quota?.can_create_more ?? true;
+
   return (
     <div className="p-6 space-y-8">
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div className="flex flex-wrap gap-3">
-          <Button onClick={() => setWithdrawalOpen(true)} className="  text-white">
-            <ArrowDownRight className="w-4 h-4 mr-2" />
-            Record Withdrawal
-          </Button>
-          <Button onClick={() => setDepositOpen(true)} className="bg-green-700 hover:bg-green-900 text-white">
-            <ArrowUpRight className="w-4 h-4 mr-2" />
-            Record Deposit
-          </Button>
+
           <Button onClick={() => setCalcOpen(true)} variant="outline">
             <Calculator className="w-4 h-4 mr-2" />
             Interest Calculator
@@ -296,58 +301,95 @@ export default function Savings() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Same as before */}
-                 <Card className="p-6 border border-gray-300">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <PiggyBank className="w-8 h-8 text-gray-700" />
-                            <p className="text-sm text-gray-600 mt-2">Total Savings Balance</p>
-                            <p className="text-2xl font-bold text-black mt-1">
-                                {formatCurrency(summary.total_balance)}
-                            </p>
-                        </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                            +11% this month
-                        </Badge>
-                    </div>
-                </Card>
+        <Card className="p-6 border border-gray-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <PiggyBank className="w-8 h-8 text-gray-700" />
+              <p className="text-sm text-gray-600 mt-2">Total Savings Balance</p>
+              <p className="text-2xl font-bold text-black mt-1">
+                {formatCurrency(summary.total_balance)}
+              </p>
 
-                <Card className="p-6 border border-gray-300">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <UserCheck className="w-8 h-8 text-gray-700" />
-                            <p className="text-sm text-gray-600 mt-2">Members with Savings</p>
-                            <p className="text-2xl font-bold text-black mt-1">
-                                {summary.members_with_savings}
-                            </p>
-                        </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                            +5% this month
-                        </Badge>
-                    </div>
-                </Card>
+              <Badge variant="secondary" className="bg-green-100 text-green-700">
+                +11% this month
+              </Badge>
+            </div>
 
-                <Card className="p-6 border border-gray-300">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <BarChart3 className="w-8 h-8 text-gray-700" />
-                            <p className="text-sm text-gray-600 mt-2">Average Balance</p>
-                            <p className="text-2xl font-bold text-black mt-1">
-                                {formatCurrency(summary.average_balance)}
-                            </p>
-                        </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                            +15% this month
-                        </Badge>
-                    </div>
-                </Card>
-            
+          </div>
+        </Card>
+
+        <Card className="p-6 border border-gray-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <UserCheck className="w-8 h-8 text-gray-700" />
+              <p className="text-sm text-gray-600 mt-2">Members with Savings</p>
+              <p className="text-2xl font-bold text-black mt-1">
+                {summary.members_with_savings}
+              </p>
+              <Badge variant="secondary" className="bg-green-100 text-green-700">
+                +5% this month
+              </Badge>
+            </div>
+
+          </div>
+        </Card>
+
+        <Card className="p-6 border border-gray-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <BarChart3 className="w-8 h-8 text-gray-700" />
+              <p className="text-sm text-gray-600 mt-2">Average Balance</p>
+              <p className="text-2xl font-bold text-black mt-1">
+                {formatCurrency(summary.average_balance)}
+              </p>
+              <Badge variant="secondary" className="bg-green-100 text-green-700">
+                +15% this month
+              </Badge>
+            </div>
+
+          </div>
+        </Card>
+
+        <Card className="p-6 border border-gray-300">
+          <div className="flex items-center justify-between">
+            <div>
+              <BarChart3 className="w-8 h-8 text-gray-700" />
+              <p className="text-sm text-gray-600 mt-2">Total Account Used</p>
+              <p className="text-2xl font-bold text-black mt-1">
+                {quota && (
+                  <>
+                    {quota.used} / {quota.limit}
+                  </>
+                )}
+              </p><Badge variant="secondary" className="bg-green-100 text-green-700">
+                +15% this month
+              </Badge>
+            </div>
+
+          </div>
+        </Card>
+
         {/* ... other cards unchanged */}
       </div>
 
       {/* Search & Sort */}
       <div className="flex flex-col md:flex-row gap-4">
+        {quota && !canCreate && (
+          <Card className="border border-yellow-300 bg-yellow-50 p-4">
+            <p className="text-sm text-yellow-700">
+              You've reached your account limit ({quota.used}/{quota.limit}).{" "}
+              <button onClick={() => navigate("/upgrade")} className="btn-link underline font-medium">
+                Upgrade plan
+              </button>{" "}
+              to add more.
+            </p>
+          </Card>
+        )}
+
+
+
         <div className="relative flex-1">
           <Input
             placeholder="Search by name, account number, or member ID"
@@ -454,9 +496,9 @@ export default function Savings() {
                 if (m) createForm.setValue("member_id", m.id.toString());
               }}
             />
-                 {createForm.formState.errors.member_id && (
-    <p className="text-sm text-red-600 -mt-2">Select a member</p>
-  )}
+            {createForm.formState.errors.member_id && (
+              <p className="text-sm text-red-600 -mt-2">Select a member</p>
+            )}
             <div className="space-y-2">
               <Label>Savings Product *</Label>
               <Select onValueChange={(v) => createForm.setValue("savings_product_id", v)}>
@@ -466,29 +508,29 @@ export default function Savings() {
                     <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
                   ))}
                 </SelectContent>
-              </Select> 
+              </Select>
 
               {createForm.formState.errors.savings_product_id && (
-      <p className="text-sm text-red-600 mt-1">Select a product</p>
-    )}
+                <p className="text-sm text-red-600 mt-1">Select a product</p>
+              )}
             </div>
             <div className="space-y-2 ">
               <Label>Opening Balance</Label>
 
               <Input
-  type="number"
-  step="0.01"
-  placeholder="0.00"
-  {...createForm.register("opening_balance", { valueAsNumber: true })}
-/>
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                {...createForm.register("opening_balance", { valueAsNumber: true })}
+              />
               {/* <Input type="number" step="0.01" {...createForm.register("opening_balance")} /> */}
 
               {createForm.formState.errors.opening_balance && (
-      <p className="text-sm text-red-600 mt-1">
-        {createForm.formState.errors.opening_balance.message || "Enter a valid amount"}
-      </p>
-    )}
-              
+                <p className="text-sm text-red-600 mt-1">
+                  {createForm.formState.errors.opening_balance.message || "Enter a valid amount"}
+                </p>
+              )}
+
             </div>
             <div className="space-y-2">
               <Label>Description (optional)</Label>
@@ -579,87 +621,87 @@ export default function Savings() {
           </form>
         </DialogContent>
       </Dialog>
-            {/* Interest Calculator Modal */}
-            <Dialog open={calcOpen} onOpenChange={setCalcOpen}>
-                <DialogContent className="max-w-md border-gray-300">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-black">
-                            Interest Calculator
-                        </DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={calcForm.handleSubmit(calculateInterest)} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Product</Label>
-                            <Select onValueChange={(v) => calcForm.setValue("product_id", v)}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select product" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {products.map((p) => (
-                                        <SelectItem key={p.id} value={p.id.toString()}>
-                                            {p.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+      {/* Interest Calculator Modal */}
+      <Dialog open={calcOpen} onOpenChange={setCalcOpen}>
+        <DialogContent className="max-w-md border-gray-300">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-black">
+              Interest Calculator
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={calcForm.handleSubmit(calculateInterest)} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Product</Label>
+              <Select onValueChange={(v) => calcForm.setValue("product_id", v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select product" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((p) => (
+                    <SelectItem key={p.id} value={p.id.toString()}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-                            {calcForm.formState.errors.product_id && (
-      <p className="text-sm text-red-600 mt-1">
-        { "Enter a valid account type"}
-      </p>
-    )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Current Balance</Label>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                {...calcForm.register("balance", { valueAsNumber: true })}
-                                placeholder="0.00"
-                            />
+              {calcForm.formState.errors.product_id && (
+                <p className="text-sm text-red-600 mt-1">
+                  {"Enter a valid account type"}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Current Balance</Label>
+              <Input
+                type="number"
+                step="0.01"
+                {...calcForm.register("balance", { valueAsNumber: true })}
+                placeholder="0.00"
+              />
 
-{calcForm.formState.errors.balance && (
-      <p className="text-sm text-red-600 mt-1">
-        { "Enter a valid figure"}
-      </p>
-    )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-2">
-                                <Label>Duration</Label>
-                                <Input
-                                    type="number"
-                                    {...calcForm.register("duration", { valueAsNumber: true })}
-                                    placeholder="12"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Period</Label>
-                                <Select onValueChange={(v) => calcForm.setValue("period", v as any)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="days">Days</SelectItem>
-                                        <SelectItem value="months">Months</SelectItem>
-                                        <SelectItem value="years">Years</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-3 pt-4">
-                            <Button type="button" variant="outline" onClick={() => setCalcOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" className="bg-black hover:bg-gray-900 text-white">
-                                Calculate
-                            </Button>
-                        </div>
-                    </form>
-                </DialogContent>
-            </Dialog>
+              {calcForm.formState.errors.balance && (
+                <p className="text-sm text-red-600 mt-1">
+                  {"Enter a valid figure"}
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Duration</Label>
+                <Input
+                  type="number"
+                  {...calcForm.register("duration", { valueAsNumber: true })}
+                  placeholder="12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Period</Label>
+                <Select onValueChange={(v) => calcForm.setValue("period", v as any)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="days">Days</SelectItem>
+                    <SelectItem value="months">Months</SelectItem>
+                    <SelectItem value="years">Years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => setCalcOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-black hover:bg-gray-900 text-white">
+                Calculate
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-           
-        </div>
-    );
+
+    </div>
+  );
 }

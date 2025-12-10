@@ -1,7 +1,6 @@
 // src/constants/api.ts
 
-import { id } from "date-fns/locale";
-
+ 
 // Use Vite's `import.meta.env` in the browser instead of `process.env` (Next.js style).
 const env = import.meta.env as Record<string, string | undefined>;
 
@@ -91,9 +90,12 @@ export const SAVINGACCOUNT_API = {
  SUMMARY : `${API_BASE}/api/savings-accounts-summary`,
  TOGGLE : (id: string | number ) => `${API_BASE}/api/savings-accounts/${id}/toggle`,
 
+    // Route::get('savings-accounts/{account}/transactions', [SavingsAccountController::class, 'transactions']);
+    ///api/savings-accounts/${id}/${endpoint}
 
- DEPOSIT:  `${API_BASE}/api/savings/transactions/deposit`,
+ DEPOSIT_WITHDRAWAL: (id: string| number, endpoint: string) =>  `${API_BASE}/api/savings-accounts/${id}/${endpoint}`,
   WITHDRAW: `${API_BASE}/api/savings/transactions/withdraw`,
+  TRANSACTIONS: (id: string | number) => `${API_BASE}/api/savings-accounts/${id}/transactions`,
   
 }
 
