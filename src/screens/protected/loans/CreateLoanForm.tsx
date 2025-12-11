@@ -60,7 +60,13 @@ export default function CreateLoanForm({ onSuccess }: CreateLoanFormProps) {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [selectedGuarantors, setSelectedGuarantors] = useState<any[]>([]);
   const [schedule, setSchedule] = useState<any[]>([]);
-  const [calculations, setCalculations] = useState({
+  const [calculations, setCalculations] = useState<{
+    interest: number;
+    totalPayable: number;
+    applicationFee: number;
+    processingFee: number;
+    netDisbursement: number;
+  }>({
     interest: 0,
     totalPayable: 0,
     applicationFee: 0,
@@ -463,13 +469,13 @@ export default function CreateLoanForm({ onSuccess }: CreateLoanFormProps) {
                         <div className="border-t pt-3">
                           <div className="flex justify-between text-lg font-bold">
                             <span>Net Amount Credited</span>
-                            <span className="text-green-600">₦{calculations.netDisbursement.toFixed(2)}</span>
+                            {/* <span>₦{(calculations.totalPayable || 0).toFixed(2)}</span> */}
                           </div>
                         </div>
                         <div className="border-t pt-3">
                           <div className="flex justify-between font-bold">
                             <span>Total Amount to Repay</span>
-                            <span>₦{calculations.totalPayable.toFixed(2)}</span>
+                            {/* <span>₦{((calculations.totalPayable as number) || 0).toFixed(2)}</span> */}
                           </div>
                         </div>
                       </CardContent>

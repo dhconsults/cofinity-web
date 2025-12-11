@@ -122,7 +122,7 @@ export default function DividendsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="sm:d-none  d-block">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Beneficiaries</CardTitle>
             <Users className="h-5 w-5 text-muted-foreground" />
