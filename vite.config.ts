@@ -13,12 +13,12 @@ export default defineConfig({
     
     proxy: {
       '/sanctum': {
-        target: 'http://10.66.77.236:8000',
+        target: 'https://cofinity.beejett.com',
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://10.66.77.236:8000',
+        target: 'https://cofinity.beejett.com',
         changeOrigin: true,
         secure: false,
       

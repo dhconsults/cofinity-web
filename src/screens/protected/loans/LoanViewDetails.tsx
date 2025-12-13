@@ -13,6 +13,7 @@ import { useState } from "react";
 import { queryClient } from "@/lib/queryClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MemberSearchSelect } from "@/screens/Components/MemberSearchSelect";
+import { LoanKeyInfoCard } from "./LoanKeyInfoCard";
  
 export default function LoanDetailPage() {
   const { id } = useParams();
@@ -127,7 +128,7 @@ const getFileTypeIcon = (path: string) => {
   const getFileName = (path: string) => path.split('/').pop() || path;
 
   return (
-    <div className="py-5 lg:p-8 max-w-6xl mx-auto space-y-8">
+    <div className="py-5 lg:p-8 mx-auto space-y-8">
       {/* Back Button */}
       <Button variant="ghost" onClick={() => navigate("/loans")}>
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -383,6 +384,20 @@ const getFileTypeIcon = (path: string) => {
   </CardContent>
 </Card>
 
+
+<div className="space-y-8">
+      {/* Place it near the top, after breadcrumbs or page title */}
+      <LoanKeyInfoCard loan={loan} />
+
+      {/* Existing sections: Repayment Schedule Table, Transactions, etc. */}
+      {/* ... */}
+    </div>
+
+
+
+
+
+
       {/* Repayment Schedule */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -412,9 +427,9 @@ const getFileTypeIcon = (path: string) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loan.repayments?.slice(0, 5).map((rep: any) => (
+              {loan.repayments?.slice(0, 5).map((rep: any, sn) => (
                 <TableRow key={rep.id}>
-                  <TableCell>{rep.id}</TableCell>
+                  <TableCell>{sn+1}</TableCell>
                   <TableCell>{new Date(rep.due_date).toLocaleDateString()}</TableCell>
                   <TableCell>{formatCurrency(rep.total_due)}</TableCell>
                   <TableCell>{getStatusBadge(rep.status)}</TableCell>
@@ -458,9 +473,9 @@ const getFileTypeIcon = (path: string) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loan.repayments?.map((rep: any) => (
+              {loan.repayments?.map((rep: any, sn) => (
                 <TableRow key={rep.id}>
-                  <TableCell>{rep.id}</TableCell>
+                  <TableCell>{sn+1}</TableCell>
                   <TableCell>{new Date(rep.due_date).toLocaleDateString()}</TableCell>
                   <TableCell>{formatCurrency(rep.principal_due)}</TableCell>
                   <TableCell>{formatCurrency(rep.interest_due)}</TableCell>

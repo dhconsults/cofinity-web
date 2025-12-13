@@ -371,7 +371,7 @@ export default function LoansPage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t flex justify-end">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/loans/${loan.id}`)}>
                     <FileText className="w-4 h-4 mr-2" />
                     View Details
                   </Button>
