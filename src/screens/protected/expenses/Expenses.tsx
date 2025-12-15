@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { 
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
   Plus,
   Search,
   Eye,
@@ -10,8 +12,9 @@ import {
   FolderOpen,
   Receipt,
   TrendingUp,
-  DollarSign
-} from 'lucide-react';
+  DollarSign,
+} from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -19,14 +22,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -34,278 +37,323 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import { EXPENSE_API } from "@/constants";
+import { toast } from "sonner";
+// Types
+interface ExpenseCategory {
+  id: number;
+  name: string;
+  description: string | null;
+  color: string;
+  total_expenses: number;
+  expenses_count: number;
+}
 
-// Mock data for expense categories
-const mockCategories = [
-  {
-    id: 1,
-    name: 'Office Supplies',
-    description: 'Stationery, printing materials, office equipment',
-    color: 'blue',
-    totalExpenses: 125000,
-    expenseCount: 12
-  },
-  {
-    id: 2,
-    name: 'Utilities',
-    description: 'Electricity, water, internet, phone bills',
-    color: 'green',
-    totalExpenses: 85000,
-    expenseCount: 8
-  },
-  {
-    id: 3,
-    name: 'Staff Welfare',
-    description: 'Staff training, refreshments, welfare packages',
-    color: 'purple',
-    totalExpenses: 250000,
-    expenseCount: 15
-  },
-  {
-    id: 4,
-    name: 'Transportation',
-    description: 'Vehicle maintenance, fuel, transportation allowances',
-    color: 'orange',
-    totalExpenses: 95000,
-    expenseCount: 10
-  },
-  {
-    id: 5,
-    name: 'Rent & Facilities',
-    description: 'Office rent, facility maintenance, security',
-    color: 'red',
-    totalExpenses: 450000,
-    expenseCount: 3
-  }
-];
+interface Expense {
+  id: number;
+  date: string;
+  description: string;
+  amount: number;
+  payment_method: string;
+  receipt_number: string | null;
+  approved_by: string | null;
+  status: "pending" | "approved" | "rejected";
+  category: {
+    id: number;
+    name: string;
+    color: string;
+  };
+}
 
-// Mock data for expenses
-const mockExpenses = [
-  {
-    id: 1,
-    date: '2024-12-10',
-    category: 'Office Supplies',
-    categoryId: 1,
-    description: 'Purchase of printer ink cartridges',
-    amount: 25000,
-    paymentMethod: 'Cash',
-    receiptNumber: 'RCP-2024-001',
-    approvedBy: 'John Doe',
-    status: 'approved'
-  },
-  {
-    id: 2,
-    date: '2024-12-09',
-    category: 'Utilities',
-    categoryId: 2,
-    description: 'Electricity bill - December',
-    amount: 35000,
-    paymentMethod: 'Bank Transfer',
-    receiptNumber: 'RCP-2024-002',
-    approvedBy: 'Jane Smith',
-    status: 'approved'
-  },
-  {
-    id: 3,
-    date: '2024-12-08',
-    category: 'Staff Welfare',
-    categoryId: 3,
-    description: 'Staff training workshop',
-    amount: 80000,
-    paymentMethod: 'Bank Transfer',
-    receiptNumber: 'RCP-2024-003',
-    approvedBy: 'John Doe',
-    status: 'pending'
-  },
-  {
-    id: 4,
-    date: '2024-12-07',
-    category: 'Transportation',
-    categoryId: 4,
-    description: 'Vehicle fuel and maintenance',
-    amount: 45000,
-    paymentMethod: 'Cash',
-    receiptNumber: 'RCP-2024-004',
-    approvedBy: 'Jane Smith',
-    status: 'approved'
-  },
-  {
-    id: 5,
-    date: '2024-12-06',
-    category: 'Office Supplies',
-    categoryId: 1,
-    description: 'Stationery and office materials',
-    amount: 15000,
-    paymentMethod: 'Cash',
-    receiptNumber: 'RCP-2024-005',
-    approvedBy: 'John Doe',
-    status: 'rejected'
-  }
-];
+interface ExpenseSummary {
+  total_expenses: number;
+  approved_expenses: number;
+  pending_expenses: number;
+  categories_count: number;
+}
 
-// Format currency
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
+ const fetchCategories = async (): Promise<ExpenseCategory[]> => {
+  const response = await apiClient.get(EXPENSE_API.CATEGORIES);
+  return response.data;
+};
+const fetchExpenses = async (params: {
+  page?: number;
+  search?: string;
+  status?: string;
+}): Promise<{ data: Expense[]; meta: any }> => {
+  const searchParams = new URLSearchParams();
+  if (params.search) searchParams.append("search", params.search);
+  if (params.status && params.status !== "all") searchParams.append("status", params.status);
+  const response = await apiClient.get(`${EXPENSE_API.EXPENSES}?${searchParams}`);
+  return response;
+};
+const fetchSummary = async (): Promise<ExpenseSummary> => {
+  const response = await apiClient.get(EXPENSE_API.SUMMARY);
+  return response.data;
+};
+
+// New: Export function (triggers download)
+const exportExpenses = async () => {
+  const response = await apiClient.get(`${EXPENSE_API.EXPENSES}/export`, {
+    responseType: "blob",
+  });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "expenses_export.csv"); // Adjust filename/extension if needed
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+const createCategory = async (data: {
+  name: string;
+  description: string;
+  color: string;
+}) => {
+  const response = await apiClient.post(EXPENSE_API.CATEGORIES, data);
+  return response.data;
+};
+
+// New: Update category
+const updateCategory = async (id: number, data: {
+  name: string;
+  description: string;
+  color: string;
+}) => {
+  const response = await apiClient.patch(`${EXPENSE_API.CATEGORIES}/${id}`, data);
+  return response.data;
+};
+
+const createExpense = async (data: any) => {
+  const response = await apiClient.post(EXPENSE_API.EXPENSES, data);
+  return response.data;
+};
+const deleteExpense = async (id: number) => {
+  await apiClient.delete(`${EXPENSE_API.EXPENSES}/${id}`);
+};
+const deleteCategory = async (id: number) => {
+  await apiClient.delete(`${EXPENSE_API.CATEGORIES}/${id}`);
+};
+
+// Utility functions (unchanged)
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
     minimumFractionDigits: 0,
   }).format(amount);
 };
-
-// Format date
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 };
-
-// Status Badge Component
-const StatusBadge = ({ status }) => {
-  const statusConfig = {
-    approved: { label: 'Approved', className: 'bg-green-100 text-green-800 border-green-200' },
-    pending: { label: 'Pending', className: 'bg-amber-100 text-amber-800 border-amber-200' },
-    rejected: { label: 'Rejected', className: 'bg-red-100 text-red-800 border-red-200' }
+const StatusBadge = ({ status }: { status: string }) => {
+  const config = {
+    approved: { label: "Approved", className: "bg-green-100 text-green-800 border-green-200" },
+    pending: { label: "Pending", className: "bg-amber-100 text-amber-800 border-amber-200" },
+    rejected: { label: "Rejected", className: "bg-red-100 text-red-800 border-red-200" },
   };
-
-  const config = statusConfig[status] || statusConfig.pending;
-
+  const cfg = config[status as keyof typeof config] || config.pending;
   return (
-    <Badge variant="outline" className={config.className}>
-      {config.label}
+    <Badge variant="outline" className={cfg.className}>
+      {cfg.label}
     </Badge>
   );
 };
 
-const ExpensesManagementPage = () => {
-  const [expenses, setExpenses] = useState(mockExpenses);
-  const [categories, setCategories] = useState(mockCategories);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [entriesPerPage, setEntriesPerPage] = useState('10');
-  
+export default function ExpensesManagementPage() {
+  const queryClient = useQueryClient();
+
+  // State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
   // Dialog states
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
   const [isViewCategoriesOpen, setIsViewCategoriesOpen] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory | null>(null);
 
   // Form states
   const [categoryForm, setCategoryForm] = useState({
-    name: '',
-    description: '',
-    color: 'blue'
+    name: "",
+    description: "",
+    color: "blue",
   });
-
   const [expenseForm, setExpenseForm] = useState({
-    date: new Date().toISOString().split('T')[0],
-    categoryId: '',
-    description: '',
-    amount: '',
-    paymentMethod: 'Cash',
-    receiptNumber: '',
-    approvedBy: '',
-    status: 'pending'
+    date: new Date().toISOString().split("T")[0],
+    expense_category_id: "",
+    description: "",
+    amount: "",
+    payment_method: "Cash",
+    receipt_number: "",
+    approved_by: "",
+    status: "pending" as "pending" | "approved" | "rejected",
   });
 
-  // Calculate statistics
-  const stats = {
-    totalExpenses: expenses.reduce((sum, exp) => sum + exp.amount, 0),
-    approvedExpenses: expenses.filter(e => e.status === 'approved').reduce((sum, exp) => sum + exp.amount, 0),
-    pendingExpenses: expenses.filter(e => e.status === 'pending').reduce((sum, exp) => sum + exp.amount, 0),
-    categoriesCount: categories.length
-  };
+  // Queries
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ["expense-categories"],
+    queryFn: fetchCategories,
+  });
+  const { data: expensesData, isLoading: expensesLoading } = useQuery({
+    queryKey: ["expenses", searchQuery, statusFilter],
+    queryFn: () => fetchExpenses({ search: searchQuery, status: statusFilter }),
+  });
+  const { data: summary } = useQuery({
+    queryKey: ["expense-summary"],
+    queryFn: fetchSummary,
+  });
 
-  // Filter expenses
-  const filteredExpenses = expenses.filter(expense =>
-    expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    expense.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    expense.receiptNumber.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const expenses: Expense[] = expensesData?.data || [];
 
-  // Handle category save
+  // Mutations
+  const createCategoryMutation = useMutation({
+    mutationFn: createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
+      setIsAddCategoryOpen(false);
+      setCategoryForm({ name: "", description: "", color: "blue" });
+    },
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: (data: { id: number; payload: any }) => updateCategory(data.id, data.payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
+      setIsEditCategoryOpen(false);
+      setSelectedCategory(null);
+    },
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: exportExpenses,
+  });
+
+  const createExpenseMutation = useMutation({
+    mutationFn: createExpense,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["expense-summary"] });
+      setIsAddExpenseOpen(false);
+      setExpenseForm({
+        date: new Date().toISOString().split("T")[0],
+        expense_category_id: "",
+        description: "",
+        amount: "",
+        payment_method: "Cash",
+        receipt_number: "",
+        approved_by: "",
+        status: "pending",
+      });
+    },
+  });
+
+  const deleteExpenseMutation = useMutation({
+    mutationFn: deleteExpense,
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["expenses"] }); 
+        toast.success('Deleted successfully'); 
+      },
+
+      onError: (error:any) => { 
+
+        
+        toast.error(error?.message || "Failed to delete"); 
+
+        
+      }
+
+     
+
+
+  });
+
+ 
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: (res:any) => {
+       
+       queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
+       toast.success('Expenses Category Updated', {description: res.message }) 
+
+
+    }, 
+     onError: (error: any) => {
+      toast.error(error?.message || "Failed to delete");
+   },
+});  
+
+  // Handlers
   const handleCategorySave = () => {
-    if (!categoryForm.name) {
-      alert('Please enter category name');
-      return;
-    }
-
-    const newCategory = {
-      id: categories.length + 1,
-      name: categoryForm.name,
-      description: categoryForm.description,
-      color: categoryForm.color,
-      totalExpenses: 0,
-      expenseCount: 0
-    };
-
-    setCategories(prev => [...prev, newCategory]);
-    setIsAddCategoryOpen(false);
-    setCategoryForm({ name: '', description: '', color: 'blue' });
+    if (!categoryForm.name.trim()) return toast.error("Category name is required");
+    createCategoryMutation.mutate(categoryForm);
   };
 
-  // Handle expense save
+  const handleCategoryUpdate = () => {
+    if (!selectedCategory || !categoryForm.name.trim()) return toast.error("Category name is required");
+    updateCategoryMutation.mutate({ id: selectedCategory.id, payload: categoryForm });
+  };
+
+  const openEditCategory = (category: ExpenseCategory) => {
+    setSelectedCategory(category);
+    setCategoryForm({
+      name: category.name,
+      description: category.description || "",
+      color: category.color,
+    });
+    setIsEditCategoryOpen(true);
+  };
+
   const handleExpenseSave = () => {
-    if (!expenseForm.categoryId || !expenseForm.description || !expenseForm.amount) {
-      alert('Please fill in all required fields');
-      return;
+    if (
+      !expenseForm.expense_category_id ||
+      !expenseForm.description.trim() ||
+      !expenseForm.amount ||
+      parseFloat(expenseForm.amount) <= 0
+    ) {
+      return toast.error("Please fill all required fields correctly");
     }
-
-    const selectedCategory = categories.find(c => c.id === parseInt(expenseForm.categoryId));
-
-    const newExpense = {
-      id: expenses.length + 1,
-      date: expenseForm.date,
-      category: selectedCategory.name,
-      categoryId: selectedCategory.id,
-      description: expenseForm.description,
+    createExpenseMutation.mutate({
+      ...expenseForm,
       amount: parseFloat(expenseForm.amount),
-      paymentMethod: expenseForm.paymentMethod,
-      receiptNumber: expenseForm.receiptNumber,
-      approvedBy: expenseForm.approvedBy,
-      status: expenseForm.status
-    };
-
-    setExpenses(prev => [newExpense, ...prev]);
-    setIsAddExpenseOpen(false);
-    
-    // Reset
-    setExpenseForm({
-      date: new Date().toISOString().split('T')[0],
-      categoryId: '',
-      description: '',
-      amount: '',
-      paymentMethod: 'Cash',
-      receiptNumber: '',
-      approvedBy: '',
-      status: 'pending'
+      expense_category_id: parseInt(expenseForm.expense_category_id),
     });
   };
 
-  const handleDeleteExpense = (id) => {
-    if (confirm('Are you sure you want to delete this expense?')) {
-      setExpenses(prev => prev.filter(e => e.id !== id));
+  const handleDeleteExpense = (id: number) => {
+    if (confirm("Are you sure you want to delete this expense?")) {
+      deleteExpenseMutation.mutate(id);
     }
   };
 
-  const handleDeleteCategory = (id) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      setCategories(prev => prev.filter(c => c.id !== id));
+  const handleDeleteCategory = (id: number) => {
+    if (confirm("Are you sure you want to delete this category? This will not delete existing expenses.")) {
+      deleteCategoryMutation.mutate(id);
     }
   };
-
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Header */}
@@ -316,13 +364,17 @@ const ExpensesManagementPage = () => {
             Track and manage all cooperative expenses and categories
           </p>
         </div>
+
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" className="gap-2">
             <Download className="w-4 h-4" />
             Export
           </Button>
 
-          {/* View Categories Button */}
+          {/* View Categories */}
+
+
+
           <Dialog open={isViewCategoriesOpen} onOpenChange={setIsViewCategoriesOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -333,52 +385,135 @@ const ExpensesManagementPage = () => {
             <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Expense Categories</DialogTitle>
-                <DialogDescription>
-                  Manage your expense categories and view statistics
-                </DialogDescription>
+                <DialogDescription>Manage your expense categories and view statistics</DialogDescription>
               </DialogHeader>
-              
               <div className="space-y-4 mt-4">
-                {categories.map(category => (
-                  <Card key={category.id} className={`border-l-4 border-l-${category.color}-500`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{category.name}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{category.description}</p>
-                          <div className="flex gap-4 mt-3">
-                            <div className="text-sm">
-                              <span className="text-gray-500">Total Expenses:</span>
-                              <span className="font-semibold ml-2">{formatCurrency(category.totalExpenses)}</span>
-                            </div>
-                            <div className="text-sm">
-                              <span className="text-gray-500">Count:</span>
-                              <span className="font-semibold ml-2">{category.expenseCount}</span>
+                {categoriesLoading ? (
+                  <p>Loading categories...</p>
+                ) : categories.length === 0 ? (
+                  <p>No categories yet.</p>
+                ) : (
+                  categories.map((category) => (
+                    <Card key={category.id} className={`border-l-4 border-l-${category.color}-500`}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{category.name}</h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {category.description || "No description"}
+                            </p>
+                            <div className="flex gap-4 mt-3">
+                              <div className="text-sm">
+                                <span className="text-gray-500">Total Expenses:</span>
+                                <span className="font-semibold ml-2">
+                                  {formatCurrency(category.total_expenses)}
+                                </span>
+                              </div>
+                              <div className="text-sm">
+                                <span className="text-gray-500">Count:</span>
+                                <span className="font-semibold ml-2">{category.expenses_count}</span>
+                              </div>
                             </div>
                           </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => openEditCategory(category)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteCategory(category.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                            onClick={() => handleDeleteCategory(category.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </div>
             </DialogContent>
           </Dialog>
 
-          {/* Add Category Button */}
+
+
+
+       
+
+
+
+          <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Expense Category</DialogTitle>
+                <DialogDescription>Update category details</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="editCategoryName">
+                    Category Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="editCategoryName"
+                    value={categoryForm.name}
+                    onChange={(e) => setCategoryForm((prev) => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editCategoryDescription">Description</Label>
+                  <Textarea
+                    id="editCategoryDescription"
+                    value={categoryForm.description}
+                    onChange={(e) => setCategoryForm((prev) => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="editCategoryColor">Category Color</Label>
+                  <Select
+                    value={categoryForm.color}
+                    onValueChange={(value) => setCategoryForm((prev) => ({ ...prev, color: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="blue">Blue</SelectItem>
+                      <SelectItem value="green">Green</SelectItem>
+                      <SelectItem value="purple">Purple</SelectItem>
+                      <SelectItem value="orange">Orange</SelectItem>
+                      <SelectItem value="red">Red</SelectItem>
+                      <SelectItem value="pink">Pink</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsEditCategoryOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCategoryUpdate}
+                    className="bg-black hover:bg-gray-800"
+                    disabled={updateCategoryMutation.isPending}
+                  >
+                    {updateCategoryMutation.isPending ? "Saving..." : "Update Category"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+
+
+
+          {/* Add Category */}
           <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -393,7 +528,7 @@ const ExpensesManagementPage = () => {
                   Create a new category to organize your expenses
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor="categoryName">
@@ -403,7 +538,9 @@ const ExpensesManagementPage = () => {
                     id="categoryName"
                     placeholder="e.g., Office Supplies"
                     value={categoryForm.name}
-                    onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setCategoryForm((prev) => ({ ...prev, name: e.target.value }))
+                    }
                   />
                 </div>
 
@@ -411,18 +548,25 @@ const ExpensesManagementPage = () => {
                   <Label htmlFor="categoryDescription">Description</Label>
                   <Textarea
                     id="categoryDescription"
-                    placeholder="Brief description of this category..."
+                    placeholder="Brief description..."
                     value={categoryForm.description}
-                    onChange={(e) => setCategoryForm(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setCategoryForm((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     rows={3}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="categoryColor">Category Color</Label>
-                  <Select 
-                    value={categoryForm.color} 
-                    onValueChange={(value) => setCategoryForm(prev => ({ ...prev, color: value }))}
+                  <Select
+                    value={categoryForm.color}
+                    onValueChange={(value) =>
+                      setCategoryForm((prev) => ({ ...prev, color: value }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -440,25 +584,24 @@ const ExpensesManagementPage = () => {
 
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button
-                    type="button"
                     variant="outline"
                     onClick={() => setIsAddCategoryOpen(false)}
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="button"
+                  <Button
                     onClick={handleCategorySave}
                     className="bg-black hover:bg-gray-800"
+                    disabled={createCategoryMutation.isPending}
                   >
-                    Save Category
+                    {createCategoryMutation.isPending ? "Saving..." : "Save Category"}
                   </Button>
                 </div>
               </div>
             </DialogContent>
           </Dialog>
 
-          {/* Add Expense Button */}
+          {/* Add Expense */}
           <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 bg-black hover:bg-gray-800">
@@ -470,13 +613,12 @@ const ExpensesManagementPage = () => {
               <DialogHeader>
                 <DialogTitle>Add New Expense</DialogTitle>
                 <DialogDescription>
-                  Record a new expense transaction. Fill in all required fields marked with *.
+                  Record a new expense transaction.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4 mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Date */}
                   <div className="space-y-2">
                     <Label htmlFor="expenseDate">
                       Date <span className="text-red-500">*</span>
@@ -485,24 +627,30 @@ const ExpensesManagementPage = () => {
                       id="expenseDate"
                       type="date"
                       value={expenseForm.date}
-                      onChange={(e) => setExpenseForm(prev => ({ ...prev, date: e.target.value }))}
+                      onChange={(e) =>
+                        setExpenseForm((prev) => ({ ...prev, date: e.target.value }))
+                      }
                     />
                   </div>
 
-                  {/* Category */}
                   <div className="space-y-2">
                     <Label htmlFor="expenseCategory">
                       Category <span className="text-red-500">*</span>
                     </Label>
-                    <Select 
-                      value={expenseForm.categoryId} 
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, categoryId: value }))}
+                    <Select
+                      value={expenseForm.expense_category_id}
+                      onValueChange={(value) =>
+                        setExpenseForm((prev) => ({
+                          ...prev,
+                          expense_category_id: value,
+                        }))
+                      }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select Category" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map(cat => (
+                        {categories.map((cat) => (
                           <SelectItem key={cat.id} value={cat.id.toString()}>
                             {cat.name}
                           </SelectItem>
@@ -511,7 +659,6 @@ const ExpensesManagementPage = () => {
                     </Select>
                   </div>
 
-                  {/* Amount */}
                   <div className="space-y-2">
                     <Label htmlFor="expenseAmount">
                       Amount <span className="text-red-500">*</span>
@@ -522,18 +669,22 @@ const ExpensesManagementPage = () => {
                       step="0.01"
                       placeholder="0.00"
                       value={expenseForm.amount}
-                      onChange={(e) => setExpenseForm(prev => ({ ...prev, amount: e.target.value }))}
+                      onChange={(e) =>
+                        setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))
+                      }
                     />
                   </div>
 
-                  {/* Payment Method */}
                   <div className="space-y-2">
-                    <Label htmlFor="paymentMethod">
-                      Payment Method <span className="text-red-500">*</span>
-                    </Label>
-                    <Select 
-                      value={expenseForm.paymentMethod} 
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, paymentMethod: value }))}
+                    <Label htmlFor="paymentMethod">Payment Method</Label>
+                    <Select
+                      value={expenseForm.payment_method}
+                      onValueChange={(value) =>
+                        setExpenseForm((prev) => ({
+                          ...prev,
+                          payment_method: value,
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -547,34 +698,43 @@ const ExpensesManagementPage = () => {
                     </Select>
                   </div>
 
-                  {/* Receipt Number */}
                   <div className="space-y-2">
                     <Label htmlFor="receiptNumber">Receipt Number</Label>
                     <Input
                       id="receiptNumber"
-                      placeholder="RCP-2024-XXX"
-                      value={expenseForm.receiptNumber}
-                      onChange={(e) => setExpenseForm(prev => ({ ...prev, receiptNumber: e.target.value }))}
+                      placeholder="RCP-2025-XXX"
+                      value={expenseForm.receipt_number}
+                      onChange={(e) =>
+                        setExpenseForm((prev) => ({
+                          ...prev,
+                          receipt_number: e.target.value,
+                        }))
+                      }
                     />
                   </div>
 
-                  {/* Approved By */}
                   <div className="space-y-2">
                     <Label htmlFor="approvedBy">Approved By</Label>
                     <Input
                       id="approvedBy"
                       placeholder="Name of approver"
-                      value={expenseForm.approvedBy}
-                      onChange={(e) => setExpenseForm(prev => ({ ...prev, approvedBy: e.target.value }))}
+                      value={expenseForm.approved_by}
+                      onChange={(e) =>
+                        setExpenseForm((prev) => ({
+                          ...prev,
+                          approved_by: e.target.value,
+                        }))
+                      }
                     />
                   </div>
 
-                  {/* Status */}
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="expenseStatus">Status</Label>
-                    <Select 
-                      value={expenseForm.status} 
-                      onValueChange={(value) => setExpenseForm(prev => ({ ...prev, status: value }))}
+                    <Select
+                      value={expenseForm.status}
+                      onValueChange={(value: any) =>
+                        setExpenseForm((prev) => ({ ...prev, status: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -588,7 +748,6 @@ const ExpensesManagementPage = () => {
                   </div>
                 </div>
 
-                {/* Description - Full width */}
                 <div className="space-y-2">
                   <Label htmlFor="expenseDescription">
                     Description <span className="text-red-500">*</span>
@@ -597,25 +756,29 @@ const ExpensesManagementPage = () => {
                     id="expenseDescription"
                     placeholder="Enter expense details..."
                     value={expenseForm.description}
-                    onChange={(e) => setExpenseForm(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setExpenseForm((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     rows={3}
                   />
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button
-                    type="button"
                     variant="outline"
                     onClick={() => setIsAddExpenseOpen(false)}
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="button"
+                  <Button
                     onClick={handleExpenseSave}
                     className="bg-black hover:bg-gray-800"
+                    disabled={createExpenseMutation.isPending}
                   >
-                    Save Expense
+                    {createExpenseMutation.isPending ? "Saving..." : "Save Expense"}
                   </Button>
                 </div>
               </div>
@@ -632,12 +795,12 @@ const ExpensesManagementPage = () => {
               <DollarSign className="w-4 h-4" />
               Total Expenses
             </CardDescription>
-            <CardTitle className="text-2xl">{formatCurrency(stats.totalExpenses)}</CardTitle>
+            <CardTitle className="text-2xl">
+              {summary ? formatCurrency(summary.total_expenses) : "₦0"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
-              All time expenses
-            </p>
+            <p className="text-sm text-gray-600">All time expenses</p>
           </CardContent>
         </Card>
 
@@ -647,12 +810,12 @@ const ExpensesManagementPage = () => {
               <TrendingUp className="w-4 h-4" />
               Approved
             </CardDescription>
-            <CardTitle className="text-2xl text-green-600">{formatCurrency(stats.approvedExpenses)}</CardTitle>
+            <CardTitle className="text-2xl text-green-600">
+              {summary ? formatCurrency(summary.approved_expenses) : "₦0"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
-              Approved expenses
-            </p>
+            <p className="text-sm text-gray-600">Approved expenses</p>
           </CardContent>
         </Card>
 
@@ -662,12 +825,12 @@ const ExpensesManagementPage = () => {
               <Receipt className="w-4 h-4" />
               Pending
             </CardDescription>
-            <CardTitle className="text-2xl text-amber-600">{formatCurrency(stats.pendingExpenses)}</CardTitle>
+            <CardTitle className="text-2xl text-amber-600">
+              {summary ? formatCurrency(summary.pending_expenses) : "₦0"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
-              Awaiting approval
-            </p>
+            <p className="text-sm text-gray-600">Awaiting approval</p>
           </CardContent>
         </Card>
 
@@ -677,37 +840,34 @@ const ExpensesManagementPage = () => {
               <FolderOpen className="w-4 h-4" />
               Categories
             </CardDescription>
-            <CardTitle className="text-2xl text-purple-600">{stats.categoriesCount}</CardTitle>
+            <CardTitle className="text-2xl text-purple-600">
+              {summary?.categories_count ?? 0}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
-              Active categories
-            </p>
+            <p className="text-sm text-gray-600">Active categories</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Expenses Table */}
+      {/* Expenses Table */}
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
             <CardTitle>All Expenses</CardTitle>
-            <div className="flex gap-2 items-center">
-              <span className="text-sm text-gray-700">Show</span>
-              <Select value={entriesPerPage} onValueChange={setEntriesPerPage}>
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-              <span className="text-sm text-gray-700">entries</span>
-            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
@@ -736,14 +896,20 @@ const ExpensesManagementPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredExpenses.length === 0 ? (
+                {expensesLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      Loading expenses...
+                    </TableCell>
+                  </TableRow>
+                ) : expenses.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                       No expenses found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredExpenses.map((expense) => (
+                  expenses.map((expense) => (
                     <TableRow key={expense.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -753,7 +919,7 @@ const ExpensesManagementPage = () => {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="font-medium">
-                          {expense.category}
+                          {expense.category.name}
                         </Badge>
                       </TableCell>
                       <TableCell className="max-w-xs">
@@ -762,9 +928,9 @@ const ExpensesManagementPage = () => {
                       <TableCell className="text-right font-semibold">
                         {formatCurrency(expense.amount)}
                       </TableCell>
-                      <TableCell>{expense.paymentMethod}</TableCell>
+                      <TableCell>{expense.payment_method}</TableCell>
                       <TableCell className="font-mono text-sm">
-                        {expense.receiptNumber || '—'}
+                        {expense.receipt_number || "—"}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={expense.status} />
@@ -775,6 +941,7 @@ const ExpensesManagementPage = () => {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
+                            onClick={() => setSelectedExpense(expense)}
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
@@ -795,16 +962,66 @@ const ExpensesManagementPage = () => {
             </Table>
           </div>
 
-          {/* Pagination info */}
-          {filteredExpenses.length > 0 && (
+          {expenses.length > 0 && (
             <div className="mt-4 text-sm text-gray-600">
-              Showing {filteredExpenses.length} of {expenses.length} expenses
+              Showing {expenses.length} expense(s)
             </div>
           )}
         </CardContent>
       </Card>
+
+
+
+
+      <Dialog open={!!selectedExpense} onOpenChange={() => setSelectedExpense(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Expense Details</DialogTitle>
+            <DialogDescription>Full details of the selected expense</DialogDescription>
+          </DialogHeader>
+          {selectedExpense && (
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-500">Date</Label>
+                  <p className="font-medium">{formatDate(selectedExpense.date)}</p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Category</Label>
+                  <p className="font-medium">{selectedExpense.category.name}</p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Amount</Label>
+                  <p className="font-medium">{formatCurrency(selectedExpense.amount)}</p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Payment Method</Label>
+                  <p className="font-medium">{selectedExpense.payment_method}</p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Receipt Number</Label>
+                  <p className="font-medium">{selectedExpense.receipt_number || "—"}</p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Approved By</Label>
+                  <p className="font-medium">{selectedExpense.approved_by || "—"}</p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Status</Label>
+                  <StatusBadge status={selectedExpense.status} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-gray-500">Description</Label>
+                <p className="font-medium mt-1">{selectedExpense.description}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+
+
     </div>
   );
-};
-
-export default ExpensesManagementPage;
+}

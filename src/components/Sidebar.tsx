@@ -75,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                 fill="currentColor"
               />
             </svg>
-            <h1 className="text-xl font-bold">CoopName</h1>
+            <h1 className="text-xl font-bold">Cofinity</h1>
           </div>
 
           <nav className="flex flex-col gap-2">

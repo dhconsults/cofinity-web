@@ -1,7 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 // import Layoutt from "./components/Layoutt";
 import Dashboard from "./pages/Dashboard";
-import Transactions from "./pages/Transactions";
 import Kyc from "./pages/Kyc";
 import Report from "./pages/Report";
 import Users from "./pages/Users";
@@ -40,6 +39,7 @@ import AuditLogPage from "./screens/protected/auditLog/AuditLog";
 import DividendsPage from "./screens/protected/dividends/Dividends";
 import CreateLoanPage from "./screens/protected/loans/CreateLoan";
 import LoanDetailPage from "./screens/protected/loans/LoanViewDetails";
+import TransactionsPage from "./screens/protected/transactions/Transactions";
  
 function App() {
   const location = useLocation();
@@ -171,7 +171,7 @@ function App() {
               <Route path="/savings/accounts/:id" element={<SavingsAccountDetail /> } />
 
               <Route path="/shares" element={<MemberShareAccountsPage />} />
-              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/kyc" element={<Kyc />} />
               <Route path="/report" element={<Report />} />
               <Route path="/user" element={<Users />} />
