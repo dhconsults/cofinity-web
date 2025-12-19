@@ -51,10 +51,12 @@ export default function PurchaseSharesForm({ onSuccess }: PurchaseSharesFormProp
   // Fetch active shares plans
   const { data: plansResponse } = useQuery({
     queryKey: ["shares-plans"],
-    queryFn: () => apiClient.get(SHARESPLAN_API.LIST).then(res => res),
+    queryFn: () => apiClient.get(SHARESPLAN_API.LIST).then(res =>  res.data.plans ),
   });
 
-  const plans: SharesPlan[] = plansResponse?.data?.plans || [];
+  // console.log(plansResponse.data.plans )
+
+  const plans: SharesPlan[] = plansResponse || [];
 
   // Fetch member's savings accounts when member changes
   const { data: savingsAccounts = [] } = useQuery<SavingsAccount[]>({

@@ -82,6 +82,8 @@ export default function ProtectedLayout({ children, navbarTitle }: ProtectedLayo
         return "Expenses Management"
       case "/dividends": 
         return "Dividends"
+      case "/wallet":
+        return "Wallet";
       default:
         return "Dashboard";
     }

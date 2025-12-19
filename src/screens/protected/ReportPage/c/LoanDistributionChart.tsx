@@ -11,13 +11,62 @@ const data = [
   { name: 'Pending/Approved', value: 4, color: '#8b5cf6' },
 ];
 
-export function LoanDistributionChart() {
+
+// {
+//     "data": [
+//         {
+//             "name": "Approved",
+//             "value": 2
+//         },
+//         {
+//             "name": "Disbursed",
+//             "value": 1
+//         },
+//         {
+//             "name": "Declined",
+//             "value": 1
+//         }
+//     ],
+//     "summary": {
+//         "total_loans": 4,
+//         "total_disbursed": 306000,
+//         "total_outstanding": 678754.82
+//     }
+// }
+
+
+interface LoanDistributionChartProps {
+  data?: {
+    name: string;
+    value: number;
+  }[];
+}
+
+
+
+
+export function LoanDistributionChart({ data }: LoanDistributionChartProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-96 flex items-center justify-center text-muted-foreground">
+        No data available
+      </div>
+    );
+  }
+
+const COLORS = ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6'];
+const chartData = data.map((item, index) => ({
+    ...item,
+    color: COLORS[index % COLORS.length],
+}));
+ 
+ 
   return (
     <div className="h-96 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
@@ -26,7 +75,7 @@ export function LoanDistributionChart() {
             dataKey="value"
             label={({ name, value }) => `${name}: ${value}%`}
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>

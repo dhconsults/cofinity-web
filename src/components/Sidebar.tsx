@@ -24,6 +24,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
   const menuItems = [
     { name: "Dashboard", icon: <Home size={18} />, href: "/dashboard" },
+    
+    { name: "Wallet", icon: <Home size={18} />, href: "/wallet" },
+
     { name: "Branches", icon: <Home size={18} />, href: "/branches" },
     { name: "Members", icon: <Users size={18} />, href: "/members" },
     { name: "Loans", icon: <DollarSign size={18} />, href: "/loans" },

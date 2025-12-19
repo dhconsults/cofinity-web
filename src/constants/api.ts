@@ -25,6 +25,7 @@ export const AUTH_API = {
   RESEND_LOGIN_CODE: `${API_BASE}/api/resend-login-code`,
   LOGOUT: `${API_BASE}/api/auth/logout`,
   ME: `${API_BASE}/api/me`, // or /api/tenant if you return tenant + user together
+  UPDATE_USER: `${API_BASE}/api/user`,
 };
 
 // Tenant (since every user belongs to exactly one tenant)

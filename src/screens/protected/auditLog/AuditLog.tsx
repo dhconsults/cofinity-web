@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-import { 
+// src/app/audit/page.tsx
+'use client';
+
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
   Search,
   Eye,
   Filter,
@@ -7,15 +11,16 @@ import {
   User,
   Activity,
   Download,
-  RefreshCw
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
+
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -44,168 +49,61 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 
-// Mock data for audit logs
-const mockAuditLogs = [
-  {
-    id: 1,
-    timestamp: '2024-12-10 14:35:22',
-    user: 'John Doe',
-    userId: 'USR-001',
-    action: 'created',
-    model: 'Member',
-    modelId: 'MEM-2024-045',
-    description: 'Created new member account',
-    ipAddress: '192.168.1.100',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-    oldValues: null,
-    newValues: {
-      name: 'Chidi Okonkwo',
-      email: 'chidi@example.com',
-      phone: '08012345678',
-      status: 'active'
-    }
-  },
-  {
-    id: 2,
-    timestamp: '2024-12-10 13:20:15',
-    user: 'Jane Smith',
-    userId: 'USR-002',
-    action: 'updated',
-    model: 'Loan',
-    modelId: 'LN-2024-001',
-    description: 'Updated loan status to approved',
-    ipAddress: '192.168.1.105',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-    oldValues: {
-      status: 'pending',
-      approved_by: null,
-      approved_at: null
-    },
-    newValues: {
-      status: 'approved',
-      approved_by: 'Jane Smith',
-      approved_at: '2024-12-10 13:20:15'
-    }
-  },
-  {
-    id: 3,
-    timestamp: '2024-12-10 12:45:30',
-    user: 'Admin User',
-    userId: 'USR-003',
-    action: 'deleted',
-    model: 'Expense',
-    modelId: 'EXP-2024-012',
-    description: 'Deleted expense record',
-    ipAddress: '192.168.1.102',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-    oldValues: {
-      amount: 25000,
-      category: 'Office Supplies',
-      description: 'Duplicate entry'
-    },
-    newValues: null
-  },
-  {
-    id: 4,
-    timestamp: '2024-12-10 11:30:45',
-    user: 'John Doe',
-    userId: 'USR-001',
-    action: 'created',
-    model: 'LoanRepayment',
-    modelId: 'REP-2024-089',
-    description: 'Recorded loan repayment',
-    ipAddress: '192.168.1.100',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-    oldValues: null,
-    newValues: {
-      loan_id: 'LN-2024-001',
-      amount: 30000,
-      payment_date: '2024-12-10',
-      payment_method: 'Bank Transfer'
-    }
-  },
-  {
-    id: 5,
-    timestamp: '2024-12-10 10:15:12',
-    user: 'Jane Smith',
-    userId: 'USR-002',
-    action: 'updated',
-    model: 'Member',
-    modelId: 'MEM-2024-023',
-    description: 'Updated member contact information',
-    ipAddress: '192.168.1.105',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-    oldValues: {
-      phone: '08011111111',
-      email: 'old@example.com'
-    },
-    newValues: {
-      phone: '08099999999',
-      email: 'new@example.com'
-    }
-  },
-  {
-    id: 6,
-    timestamp: '2024-12-10 09:20:33',
-    user: 'Admin User',
-    userId: 'USR-003',
-    action: 'created',
-    model: 'Expense',
-    modelId: 'EXP-2024-013',
-    description: 'Added new expense',
-    ipAddress: '192.168.1.102',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-    oldValues: null,
-    newValues: {
-      category: 'Utilities',
-      amount: 35000,
-      description: 'Electricity bill - December',
-      payment_method: 'Bank Transfer'
-    }
-  },
-  {
-    id: 7,
-    timestamp: '2024-12-09 16:45:20',
-    user: 'John Doe',
-    userId: 'USR-001',
-    action: 'updated',
-    model: 'Loan',
-    modelId: 'LN-2024-005',
-    description: 'Updated loan repayment schedule',
-    ipAddress: '192.168.1.100',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-    oldValues: {
-      repayment_date: '2024-12-15',
-      amount: 25000
-    },
-    newValues: {
-      repayment_date: '2024-12-20',
-      amount: 28000
-    }
-  }
-];
+import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
+  
+interface AuditLog {
+  id: number;
+  timestamp: string;
+  user: string;
+  userId: string | null;
+  action: 'created' | 'updated' | 'deleted';
+  model: string;
+  modelId: string;
+  description: string;
+  ipAddress: string;
+  userAgent: string;
+  oldValues: Record<string, any> | null;
+  newValues: Record<string, any> | null;
+}
+
+interface AuditResponse {
+  data: {
+    data: AuditLog[];
+    current_page: number;
+    total: number;
+    per_page: number;
+    last_page: number;
+  };
+  stats: {
+    totalLogs: number;
+    created: number;
+    updated: number;
+    deleted: number;
+  };
+  unique_models: string[];
+}
 
 // Format date and time
-const formatDateTime = (dateString) => {
+const formatDateTime = (dateString: string) => {
   return new Date(dateString).toLocaleString('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   });
 };
 
-// Action Badge Component
-const ActionBadge = ({ action }) => {
-  const actionConfig = {
+// Action Badge
+const ActionBadge = ({ action }: { action: string }) => {
+  const config = {
     created: { label: 'Created', className: 'bg-green-100 text-green-800 border-green-200' },
     updated: { label: 'Updated', className: 'bg-blue-100 text-blue-800 border-blue-200' },
-    deleted: { label: 'Deleted', className: 'bg-red-100 text-red-800 border-red-200' }
-  };
-
-  const config = actionConfig[action] || actionConfig.created;
+    deleted: { label: 'Deleted', className: 'bg-red-100 text-red-800 border-red-200' },
+  }[action] || { label: action, className: 'bg-gray-100 text-gray-800' };
 
   return (
     <Badge variant="outline" className={config.className}>
@@ -214,15 +112,16 @@ const ActionBadge = ({ action }) => {
   );
 };
 
-// Model Badge Component
-const ModelBadge = ({ model }) => {
-  const colorMap = {
+// Model Badge
+const ModelBadge = ({ model }: { model: string }) => {
+  const colorMap: Record<string, string> = {
     Member: 'bg-purple-100 text-purple-800 border-purple-200',
     Loan: 'bg-blue-100 text-blue-800 border-blue-200',
     LoanRepayment: 'bg-indigo-100 text-indigo-800 border-indigo-200',
     Expense: 'bg-orange-100 text-orange-800 border-orange-200',
-    ExpenseCategory: 'bg-amber-100 text-amber-800 border-amber-200',
-    User: 'bg-gray-100 text-gray-800 border-gray-200'
+    PlatformTransaction: 'bg-teal-100 text-teal-800 border-teal-200',
+    SavingsAccount: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    User: 'bg-gray-100 text-gray-800 border-gray-200',
   };
 
   return (
@@ -232,43 +131,69 @@ const ModelBadge = ({ model }) => {
   );
 };
 
-const AuditLogPage = () => {
-  const [auditLogs, setAuditLogs] = useState(mockAuditLogs);
+export default function AuditLogPage() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [entriesPerPage, setEntriesPerPage] = useState('10');
+  const [perPage, setPerPage] = useState('25');
   const [actionFilter, setActionFilter] = useState('all');
   const [modelFilter, setModelFilter] = useState('all');
-  const [selectedLog, setSelectedLog] = useState(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  // Calculate statistics
-  const stats = {
-    totalLogs: auditLogs.length,
-    created: auditLogs.filter(log => log.action === 'created').length,
-    updated: auditLogs.filter(log => log.action === 'updated').length,
-    deleted: auditLogs.filter(log => log.action === 'deleted').length
-  };
+  const isOwnerOrAdmin = ['owner', 'admin'].includes(user?.role || '');
 
-  // Filter audit logs
-  const filteredLogs = auditLogs.filter(log => {
-    const matchesSearch = 
-      log.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.modelId.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesAction = actionFilter === 'all' || log.action === actionFilter;
-    const matchesModel = modelFilter === 'all' || log.model === modelFilter;
-    
-    return matchesSearch && matchesAction && matchesModel;
+  const {
+    data: response,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<AuditResponse>({
+    queryKey: ['audit-logs', { searchQuery, perPage, actionFilter, modelFilter }],
+    queryFn: () =>
+      apiClient
+        .get('/api/audit-logs', {
+          params: {
+            search: searchQuery || undefined,
+            action: actionFilter === 'all' ? undefined : actionFilter,
+            model: modelFilter === 'all' ? undefined : modelFilter,
+            per_page: perPage,
+          },
+        })
+        .then((res) => res.data),
+    staleTime: 1000 * 60, // 1 minute
   });
 
-  // Get unique models
-  const uniqueModels = [...new Set(auditLogs.map(log => log.model))];
+  const logs = response?.data.data || [];
+  const stats = response?.stats || { totalLogs: 0, created: 0, updated: 0, deleted: 0 };
+  const uniqueModels = response?.unique_models || [];
 
-  const handleViewDetails = (log) => {
+  const handleRefresh = () => {
+    refetch();
+    toast.success('Refreshed', { description: 'Audit logs updated.' });
+  };
+
+  const handleViewDetails = (log: AuditLog) => {
     setSelectedLog(log);
     setIsViewDialogOpen(true);
   };
+
+  if (!isOwnerOrAdmin) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Access denied. Only owners and admins can view audit logs.
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-destructive">
+        Failed to load audit logs. Please try again.
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
@@ -276,16 +201,14 @@ const AuditLogPage = () => {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Audit Log</h1>
-          <p className="text-gray-600 mt-1">
-            Track all system activities and user actions
-          </p>
+          <p className="text-gray-600 mt-1">Track all system activities and user actions</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" onClick={handleRefresh} className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" disabled>
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -300,7 +223,9 @@ const AuditLogPage = () => {
               <Activity className="w-4 h-4" />
               Total Activities
             </CardDescription>
-            <CardTitle className="text-2xl">{stats.totalLogs}</CardTitle>
+            <CardTitle className="text-2xl">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalLogs}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-600">All logged activities</p>
@@ -312,7 +237,9 @@ const AuditLogPage = () => {
             <CardDescription className="flex items-center gap-1">
               Created Actions
             </CardDescription>
-            <CardTitle className="text-2xl text-green-600">{stats.created}</CardTitle>
+            <CardTitle className="text-2xl text-green-600">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.created}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-600">New records created</p>
@@ -324,7 +251,9 @@ const AuditLogPage = () => {
             <CardDescription className="flex items-center gap-1">
               Updated Actions
             </CardDescription>
-            <CardTitle className="text-2xl text-blue-600">{stats.updated}</CardTitle>
+            <CardTitle className="text-2xl text-blue-600">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.updated}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-600">Records modified</p>
@@ -336,7 +265,9 @@ const AuditLogPage = () => {
             <CardDescription className="flex items-center gap-1">
               Deleted Actions
             </CardDescription>
-            <CardTitle className="text-2xl text-red-600">{stats.deleted}</CardTitle>
+            <CardTitle className="text-2xl text-red-600">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.deleted}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-600">Records deleted</p>
@@ -344,7 +275,7 @@ const AuditLogPage = () => {
         </Card>
       </div>
 
-      {/* Main Audit Log Table */}
+      {/* Main Table */}
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4">
@@ -352,7 +283,7 @@ const AuditLogPage = () => {
               <CardTitle>Activity Log</CardTitle>
               <div className="flex gap-2 items-center">
                 <span className="text-sm text-gray-700">Show</span>
-                <Select value={entriesPerPage} onValueChange={setEntriesPerPage}>
+                <Select value={perPage} onValueChange={setPerPage}>
                   <SelectTrigger className="w-20">
                     <SelectValue />
                   </SelectTrigger>
@@ -400,8 +331,10 @@ const AuditLogPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Models</SelectItem>
-                  {uniqueModels.map(model => (
-                    <SelectItem key={model} value={model}>{model}</SelectItem>
+                  {uniqueModels.map((model) => (
+                    <SelectItem key={model} value={model}>
+                      {model}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -425,14 +358,20 @@ const AuditLogPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLogs.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    </TableCell>
+                  </TableRow>
+                ) : logs.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                       No audit logs found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredLogs.map((log) => (
+                  logs.map((log) => (
                     <TableRow key={log.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -445,7 +384,7 @@ const AuditLogPage = () => {
                           <User className="w-4 h-4 text-gray-400" />
                           <div>
                             <div className="font-medium">{log.user}</div>
-                            <div className="text-xs text-gray-500">{log.userId}</div>
+                            {log.userId && <div className="text-xs text-gray-500">{log.userId}</div>}
                           </div>
                         </div>
                       </TableCell>
@@ -455,15 +394,11 @@ const AuditLogPage = () => {
                       <TableCell>
                         <ModelBadge model={log.model} />
                       </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {log.modelId}
-                      </TableCell>
+                      <TableCell className="font-mono text-sm">{log.modelId}</TableCell>
                       <TableCell className="max-w-xs">
                         <p className="truncate">{log.description}</p>
                       </TableCell>
-                      <TableCell className="font-mono text-sm text-gray-600">
-                        {log.ipAddress}
-                      </TableCell>
+                      <TableCell className="font-mono text-sm text-gray-600">{log.ipAddress}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center">
                           <Button
@@ -483,28 +418,25 @@ const AuditLogPage = () => {
             </Table>
           </div>
 
-          {/* Pagination info */}
-          {filteredLogs.length > 0 && (
+          {/* Pagination Info */}
+          {!isLoading && logs.length > 0 && (
             <div className="mt-4 text-sm text-gray-600">
-              Showing {filteredLogs.length} of {auditLogs.length} logs
+              Showing {logs.length} of {response?.data.total || 0} logs
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* View Details Dialog */}
+      {/* Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Audit Log Details</DialogTitle>
-            <DialogDescription>
-              Complete information about this activity
-            </DialogDescription>
+            <DialogDescription>Complete information about this activity</DialogDescription>
           </DialogHeader>
-          
+
           {selectedLog && (
             <div className="space-y-6 mt-4">
-              {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-gray-600">Timestamp</Label>
@@ -520,7 +452,7 @@ const AuditLogPage = () => {
                     <User className="w-4 h-4 text-gray-400" />
                     <div>
                       <div className="font-medium">{selectedLog.user}</div>
-                      <div className="text-xs text-gray-500">{selectedLog.userId}</div>
+                      {selectedLog.userId && <div className="text-xs text-gray-500">{selectedLog.userId}</div>}
                     </div>
                   </div>
                 </div>
@@ -541,28 +473,20 @@ const AuditLogPage = () => {
 
                 <div className="space-y-2">
                   <Label className="text-gray-600">Model ID</Label>
-                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">
-                    {selectedLog.modelId}
-                  </div>
+                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">{selectedLog.modelId}</div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-gray-600">IP Address</Label>
-                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">
-                    {selectedLog.ipAddress}
-                  </div>
+                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">{selectedLog.ipAddress}</div>
                 </div>
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <Label className="text-gray-600">Description</Label>
-                <div className="p-3 bg-gray-50 rounded-md">
-                  {selectedLog.description}
-                </div>
+                <div className="p-3 bg-gray-50 rounded-md">{selectedLog.description}</div>
               </div>
 
-              {/* User Agent */}
               <div className="space-y-2">
                 <Label className="text-gray-600">User Agent</Label>
                 <div className="p-3 bg-gray-50 rounded-md text-sm text-gray-700 break-all">
@@ -570,7 +494,6 @@ const AuditLogPage = () => {
                 </div>
               </div>
 
-              {/* Old Values */}
               {selectedLog.oldValues && (
                 <div className="space-y-2">
                   <Label className="text-gray-600">Old Values</Label>
@@ -582,7 +505,6 @@ const AuditLogPage = () => {
                 </div>
               )}
 
-              {/* New Values */}
               {selectedLog.newValues && (
                 <div className="space-y-2">
                   <Label className="text-gray-600">New Values</Label>
@@ -595,10 +517,7 @@ const AuditLogPage = () => {
               )}
 
               <div className="flex justify-end pt-4 border-t">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsViewDialogOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                   Close
                 </Button>
               </div>
@@ -608,6 +527,4 @@ const AuditLogPage = () => {
       </Dialog>
     </div>
   );
-};
-
-export default AuditLogPage;
+}

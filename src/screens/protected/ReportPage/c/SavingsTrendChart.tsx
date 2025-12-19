@@ -18,7 +18,26 @@ const data = [
   { month: 'Dec', deposits: 585000, withdrawals: 345000 },
 ];
 
-export function SavingsTrendChart() {
+
+interface SavingsTrendProp { 
+    data?: {
+        month: string; 
+        deposits: number; 
+        withdrawals: number; 
+
+    }[];
+}
+
+export function SavingsTrendChart({data}: SavingsTrendProp) {
+   
+
+      if (!data || data.length === 0) {
+    return <div className="h-96 flex items-center justify-center text-muted-foreground">No data available</div>;
+  }
+
+    
+
+
   return (
     <div className="h-96 w-full">
       <ResponsiveContainer width="100%" height="100%">

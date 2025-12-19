@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getData } from "@/lib/storageHelper";
 
 interface NavbarProps {
   setSidebarOpen: (open: boolean) => void;
@@ -24,7 +25,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
-  const { user, tenant, logout } = useAuth();
+  const { user, tenants, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [notifications] = useState(3); // Replace with real count later
@@ -33,6 +34,15 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
     await logout();
     navigate("/login");
   };
+
+
+  ///get the particular tenant from tenants 
+    
+
+    const localCoopId = getData<string | number>("selected_cooperative_id");
+    const tenant = tenants?.find((t) => t.id === localCoopId);
+
+
 
   const initials = user?.name
     ? user.name
@@ -103,7 +113,7 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
             <DropdownMenuContent className="w-64" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.name}</p>
+                  <p className="text-sm font-medium leading-none">{user?.full_name}</p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>

@@ -1,31 +1,58 @@
 'use client';
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { CardDescription } from '@/components/ui/card';
 
-const data = [
-  { source: 'Membership Fees', amount: 250000 },
-  { source: 'Loan Interest', amount: 480000 },
-  { source: 'Application/Processing Fees', amount: 120000 },
-  { source: 'Late Penalties', amount: 65000 },
-  { source: 'Dividend Income', amount: 90000 },
-  { source: 'Other', amount: 35000 },
-];
+interface RevenueBreakdownChartProps {
+  data?: {
+    source: string;
+    amount: number;
+  }[];
+}
 
-export function RevenueBreakdownChart() {
+export function RevenueBreakdownChart({ data }: RevenueBreakdownChartProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-96 flex items-center justify-center text-muted-foreground">
+        No revenue data
+      </div>
+    );
+  }
+
   return (
     <div className="h-96 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="horizontal">
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`} />
-          <YAxis dataKey="source" type="category" width={150} />
-          <Tooltip formatter={(value: number) => `₦${value.toLocaleString()}`} />
-          <Bar dataKey="amount" fill="#10b981" />
+        <BarChart
+          data={data}
+          margin={{ top: 20, right: 20, left: 10, bottom: 10 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
+          <XAxis dataKey="source" />
+          <YAxis
+            tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
+          />
+          <Tooltip
+            formatter={(value: number) => `₦${value.toLocaleString()}`}
+          />
+          <Bar
+            dataKey="amount"
+            fill="#22c55e"
+            radius={[8, 8, 0, 0]}
+            activeBar={{ fill: '#16a34a' }}
+          />
         </BarChart>
       </ResponsiveContainer>
+
       <CardDescription className="text-center mt-4">
-        Annual revenue by source (horizontal for better label readability)
+        Revenue by source
       </CardDescription>
     </div>
   );

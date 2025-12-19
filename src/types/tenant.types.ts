@@ -39,6 +39,17 @@ export type Tenant = {
   state:string; 
   status: string;
   website: string;
+
+
+  auto_sweep_enabled: string; 
+  sweep_bank_name: string | null;
+  sweep_account_name: string | null;
+  sweep_account_number: string | null;
+  sweep_bank_code: string | null;
+  sms_enabled: boolean;
+  auto_deduct_fees:boolean;  
+  email_enabled:boolean; 
+
  
  
 
