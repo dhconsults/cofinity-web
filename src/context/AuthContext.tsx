@@ -22,6 +22,7 @@ type AuthContextValue = AuthState & {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
+  updateUser: (updates: Partial<User>) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -77,6 +78,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+
+  //update user 
+  const updateUser = async (updates: Partial<User>) => {
+    try {
+      const response = await api.put(AUTH_API.UPDATE_USER, updates);
+      const { user } = response.data;
+      setState((prev) => ({
+        ...prev,
+        user,
+      }));
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      throw error;
+    }
+  };
+
   // Login
   const login = async (email: string, password: string) => {
     await fetchCsrfToken();
@@ -122,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ...state,
     login,
     logout,
+    updateUser,
     refetchUser: fetchUser,
   };
 

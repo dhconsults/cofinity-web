@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
   Loader2,
-  CheckCircle,
+  Building2,
   AlertCircle,
   Shield,
   UserPlus,
@@ -33,7 +33,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { apiClient } from "@/lib/api-client";
 import { useNavigate } from "react-router-dom";
-import { MEMBERS_API } from "@/constants";
+import { BRANCH_API, MEMBERS_API } from "@/constants";
 
 const nigerianStates = [
   "Abia",
@@ -78,6 +78,16 @@ const nigerianStates = [
 export default function AddMember() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: branchesData, isLoading: branchesLoading } = useQuery({
+    queryKey: ["branches"],
+    queryFn: async () => {
+      const res = await apiClient.get(BRANCH_API.LIST);
+      return res.data; // Full payload: { branches: [], quota: {}, ... }
+    },
+  });
+
+  const branches = branchesData?.branches ?? [];
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -177,13 +187,20 @@ export default function AddMember() {
     ];
     for (const field of required) {
       if (!formData[field as keyof typeof formData]?.trim()) {
-        toast.error(`Please fill ${field.replace(/_/g, " ")}`);
-        return;
+        if (!formData[field as keyof typeof formData]?.toString().trim()) {
+          toast.error(
+            `Please fill ${
+              field === "branch_id" ? "branch" : field.replace(/_/g, " ")
+            }`
+          );
+          return;
+        }
       }
     }
 
     createMember.mutate({
       ...formData,
+      branch_id: Number(formData.branch_id),
       bvn_verified: verification.bvn_verified,
       nin_verified: verification.nin_verified,
 
@@ -192,7 +209,7 @@ export default function AddMember() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-6 border-4 border-red-500">
+    <div className=" bg-neutral-50 p-6">
       <div className="mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -210,7 +227,7 @@ export default function AddMember() {
           <UserPlus className="w-10 h-10 text-neutral-400" />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="">
           {/* Personal Info */}
           <Card className="p-6">
             <h2 className="text-xl font-bold mb-6">Personal Information</h2>
@@ -298,6 +315,61 @@ export default function AddMember() {
                   placeholder="john@example.com"
                 />
               </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <Building2 className="w-6 h-6" />
+              Assign to Branch
+            </h2>
+            <div className="max-w-md">
+              <Label>Branch *</Label>
+              {branchesLoading ? (
+                <div className="h-10 bg-neutral-100 rounded-lg animate-pulse" />
+              ) : branches.length === 0 ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    No branches found.{" "}
+                    <a href="/branches" className="underline font-medium">
+                      Create a branch first
+                    </a>
+                    .
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Select
+                  value={formData.branch_id}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, branch_id: value })
+                  }
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Select a branch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches.map((branch: any) => (
+                      <SelectItem key={branch.id} value={String(branch.id)}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-neutral-500" />
+                          <div>
+                            <div className="font-medium">{branch.name}</div>
+                            <div className="text-xs text-neutral-500">
+                              {branch.city}, {branch.state}
+                            </div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {!formData.branch_id && formData.branch_id !== "" && (
+                <p className="text-xs text-red-600 mt-1">
+                  Please select a branch
+                </p>
+              )}
             </div>
           </Card>
 

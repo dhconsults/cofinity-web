@@ -1,415 +1,420 @@
-import React, { useState } from 'react';
+'use client';
+
+import { formatCurrency } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
 import {
   Users,
-  TrendingUp,
+  HandCoins,
   PiggyBank,
-  AlertTriangle,
-  X,
-  ChevronRight,
+  AlertCircle,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  CheckCircle2,
+  BadgeCheck,
   Plus,
-  ArrowUpRight,
-  ArrowDownLeft,
-  MoreVertical,
+  FileText,
+  Loader2,
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { Skeleton } from '@/components/ui/skeleton';
 
+import apiClient from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
 
-// Mock data
-const dashboardData = {
-  metrics: [
-    {
-      id: 'members',
-      label: 'Total Members',
-      value: '5,233',
-      change: '+11%',
-      trend: 'up',
-      icon: Users,
-      color: 'bg-blue-50 text-blue-700',
-    },
-    {
-      id: 'loans',
-      label: 'Active Loans',
-      value: '350',
-      change: '+5%',
-      trend: 'up',
-      icon: TrendingUp,
-      color: 'bg-green-50 text-green-700',
-    },
-    {
-      id: 'savings',
-      label: 'Total Savings',
-      value: '₦5.2M',
-      change: '+15%',
-      trend: 'up',
-      icon: PiggyBank,
-      color: 'bg-amber-50 text-amber-700',
-    },
-    {
-      id: 'kyc',
-      label: 'Pending KYC',
-      value: '101',
-      change: '-3%',
-      trend: 'down',
-      icon: AlertTriangle,
-      color: 'bg-red-50 text-red-700',
-    },
-  ],
-  activities: [
-    {
-      id: 1,
-      member: 'Sophia Clark',
-      activity: 'Loan Application',
-      date: '2024-07-15',
-      status: 'pending',
-      amount: '₦500,000',
-    },
-    {
-      id: 2,
-      member: 'Ethan Carter',
-      activity: 'Savings Deposit',
-      date: '2024-07-14',
-      status: 'completed',
-      amount: '₦100,000',
-    },
-    {
-      id: 3,
-      member: 'Olivia Bennett',
-      activity: 'KYC Update',
-      date: '2024-07-13',
-      status: 'approved',
-      amount: '—',
-    },
-    {
-      id: 4,
-      member: 'Liam Foster',
-      activity: 'Share Purchase',
-      date: '2024-07-12',
-      status: 'completed',
-      amount: '₦50,000',
-    },
-    {
-      id: 5,
-      member: 'Ava Hughes',
-      activity: 'Loan Repayment',
-      date: '2024-07-11',
-      status: 'completed',
-      amount: '₦150,000',
-    },
-  ],
-  chartData: [
-    { month: 'Jan', savings: 3000, loans: 2000 },
-    { month: 'Feb', savings: 4000, loans: 2500 },
-    { month: 'Mar', savings: 4200, loans: 2700 },
-    { month: 'Apr', savings: 3800, loans: 3100 },
-    { month: 'May', savings: 4600, loans: 3400 },
-    { month: 'Jun', savings: 5200, loans: 3900 },
-    { month: 'Jul', savings: 5800, loans: 4200 },
-    { month: 'Aug', savings: 6000, loans: 4500 },
-  ],
-};
-
-// Status badge component
-const StatusBadge = ({ status }) => {
-  const statusConfig = {
-    pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-    completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
-    approved: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Approved' },
+interface DashboardData {
+  stats: {
+    total_members: number;
+    members_growth: number;
+    active_loans: number;
+    loans_growth: number;
+    total_savings: number;
+    savings_growth: number;
+    pending_kyc: number;
+    kyc_change: number;
   };
-  const config = statusConfig[status] || statusConfig.pending;
-  return (
-    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}`}>
-      {config.label}
-    </span>
-  );
-};
+  recent_activities: Array<{
+    name: string;
+    action: string;
+    amount: number | null;
+    date: string;
+    status: 'pending' | 'completed' | 'approved';
+  }>;
+  monthly_trend: Array<{
+    month: string;
+    savings: number;
+    loans: number;
+  }>;
+  repayment_rate: number;
+  subscription: {
+    plan: string;
+    price: number;
+    users_used: number;
+    users_limit: number;
+    admins_used: number;
+    admins_limit: number;
+    expired: boolean;
+    days_overdue: number;
+  };
+}
 
-// Metric card component
-const MetricCard = ({ metric }) => {
-  const Icon = metric.icon;
+export default function DashboardPage() {
+  const { user } = useAuth();
+
+  const {
+    data,
+    isLoading,
+    error,
+  } = useQuery<DashboardData>({
+    queryKey: ['dashboard-summary'],
+    queryFn: () => apiClient.get('/api/dashboard/summary').then(res => res.data),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Failed to load dashboard data. Please try again later.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  const stats = data?.stats || {};
+  const activities = data?.recent_activities || [];
+  const trend = data?.monthly_trend || [];
+  const repaymentRate = data?.repayment_rate || 0;
+  const subscription = data?.subscription || {};
+
   return (
-    <Card className="rounded-2xl border border-neutral-200 p-6 hover:shadow-lg transition-shadow">
+    <div className="container mx-auto p-6 space-y-8">
+      {/* Header */}
       <div>
-        <div className={`w-12 h-12 rounded-lg ${metric.color} flex items-center justify-center mb-4`}>
-          <Icon className="w-6 h-6" />
-        </div>
-        <p className="text-sm font-medium text-neutral-600">{metric.label}</p>
-        <h3 className="text-3xl font-bold text-neutral-900 mt-2">{metric.value}</h3>
-        <div className="flex items-center gap-1 mt-2">
-          {metric.trend === 'up' ? (
-            <ArrowUpRight className="w-4 h-4 text-green-600" />
-          ) : (
-            <ArrowDownLeft className="w-4 h-4 text-red-600" />
-          )}
-          <span
-            className={`text-xs font-semibold ${metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}
-          >
-            {metric.change} This Month
-          </span>
-        </div>
-      </div>
-    </Card>
-  );
-};
-
-// Alert banner component
-const AlertBanner = ({ onDismiss }) => {
-  return (
-
-    <>
- 
-
-
-    <Alert className="mb-6 rounded-xl border border-red-200 bg-red-50">
-           <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <AlertTitle className="text-red-900">Subscription Expired</AlertTitle>
-            <AlertDescription className="text-red-700 text-xs mt-1">
-              Your active subscription expired 23 days ago. Please renew to continue using this service.
-            </AlertDescription>
-          </div>
-       
-      
-
-
-       
-    </Alert>
-
-    </>
-  );
-};
-
-// Quick actions component
-const QuickActions = () => {
-  return (
-    <Card className="rounded-2xl border border-neutral-200 p-6">
-      <h2 className="text-lg font-bold text-neutral-900 mb-4">Quick Actions</h2>
-      <div className="space-y-3">
-        <Button className="w-full py-5 text-sm font-bold rounded-lg bg-black text-white hover:bg-neutral-900">
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Member
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full py-5 text-sm font-bold rounded-lg border-blue-200 text-blue-700 hover:bg-blue-50"
-        >
-          Approve Loan
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full py-5 text-sm font-bold rounded-lg border-blue-200 text-blue-700 hover:bg-blue-50"
-        >
-          Generate Report
-        </Button>
-      </div>
-    </Card>
-  );
-};
-
-// Subscription usage component
-const SubscriptionUsage = () => {
-  return (
-    <Card className="rounded-2xl border border-neutral-200 p-6">
-      <h2 className="text-lg font-bold text-neutral-900 mb-4">Subscription Usage</h2>
-
-      {/* Users usage */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-neutral-700" />
-            <span className="text-sm font-semibold text-neutral-800">Users</span>
-          </div>
-          <span className="text-xs font-semibold text-neutral-700">2 of 10</span>
-        </div>
-        <div className="w-full bg-neutral-200 rounded-full h-2 overflow-hidden">
-          <div className="h-full bg-teal-500 rounded-full" style={{ width: '20%' }} />
-        </div>
-        <p className="text-xs text-neutral-600 mt-2">8 users remaining. Upgrade to increase seats.</p>
-      </div>
-
-      {/* Sub-admins usage */}
-      <div className="mb-6 pb-6 border-b border-neutral-200">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-neutral-700" />
-            <span className="text-sm font-semibold text-neutral-800">Sub-Admins</span>
-          </div>
-          <span className="text-xs font-semibold text-neutral-700">3 of 5</span>
-        </div>
-        <div className="w-full bg-neutral-200 rounded-full h-2 overflow-hidden">
-          <div className="h-full bg-orange-500 rounded-full" style={{ width: '60%' }} />
-        </div>
-        <p className="text-xs text-neutral-600 mt-2">2 sub-admin slots remaining.</p>
-      </div>
-
-      {/* Plan & upgrade */}
-      <div className="space-y-3">
-        <div>
-          <p className="text-xs text-neutral-600">Current Plan</p>
-          <p className="text-sm font-semibold text-neutral-900">Starter • ₦0/month</p>
-        </div>
-        <Button className="w-full py-5 text-sm font-bold rounded-lg bg-black text-white hover:bg-neutral-900">
-          Upgrade Plan
-        </Button>
-        <p className="text-xs text-neutral-600">
-          Upgrading increases user seats, sub-admin slots, and unlocks advanced features.
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">
+          Welcome back, <span className="font-medium">{user?.full_name || 'Cooperative Admin'}</span>
         </p>
       </div>
-    </Card>
-  );
-};
 
-// Main dashboard component
-export default function CooperativeDashboard() {
-  const [showAlert, setShowAlert] = useState(true);
+      {/* Subscription Alert */}
+      {subscription.expired && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-5 w-5" />
+          <AlertTitle>Subscription Expired</AlertTitle>
+          <AlertDescription>
+            Your active subscription expired {subscription.days_overdue} days ago. Please renew to continue using this service.
+          </AlertDescription>
+        </Alert>
+      )}
 
-  return (
-    <div className="min-h-screen bg-neutral-50 py-2 md:p-6 lg:p-8 ">
-      <div className="  mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900">Dashboard</h1>
-          <p className="text-sm text-neutral-600 mt-1">Welcome back, Cooperative Admin</p>
-        </div>
-
-        
-
-        {/* Alert Banner */}
-        {showAlert && <AlertBanner onDismiss={() => setShowAlert(false)} />}
-
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {dashboardData.metrics.map((metric) => (
-            <MetricCard key={metric.id} metric={metric} />
-          ))}
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* Activities Table - Spans 2 columns */}
-          <Card className="rounded-2xl border border-neutral-200 p-6 lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-neutral-900">Recent Activities</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-neutral-700 hover:bg-neutral-100 gap-1"
-              >
-                View All
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <Table className="w-full text-sm">
-                <TableHeader className=" ">
-                  <TableRow className="border-b border-neutral-200 w-full">
-                    <TableHead className="text-left py-3 px-4 font-semibold text-neutral-700">Member</TableHead>
-                    <TableHead className="text-left py-3 px-4 font-semibold text-neutral-700">Activity</TableHead>
-                    <TableHead className="text-right py-3 px-4 font-semibold text-neutral-700">Amount</TableHead>
-                    <TableHead className="text-left py-3 px-4 font-semibold text-neutral-700">Date</TableHead>
-                    <TableHead className="text-left py-3 px-4 font-semibold text-neutral-700">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {dashboardData.activities.map((activity) => (
-                    <TableRow
-                      key={activity.id}
-                      className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors"
-                    >
-                      <TableCell className="py-3 px-4 text-neutral-900 font-medium">{activity.member}</TableCell>
-                      <TableCell className="py-3 px-4 text-neutral-600">{activity.activity}</TableCell>
-                      <TableCell className="py-3 px-4 text-right text-neutral-900 font-semibold">{activity.amount}</TableCell>
-                      <TableCell className="py-3 px-4 text-neutral-600 text-xs">{activity.date}</TableCell>
-                      <TableCell className="py-3 px-4">
-                        <StatusBadge status={activity.status} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {['Total Members', 'Active Loans', 'Total Savings', 'Pending KYC'].map((title, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {isLoading ? <Skeleton className="h-4 w-32" /> : title}
+              </CardTitle>
+              {i === 0 && <Users className="h-4 w-4 text-muted-foreground" />}
+              {i === 1 && <HandCoins className="h-4 w-4 text-muted-foreground" />}
+              {i === 2 && <PiggyBank className="h-4 w-4 text-muted-foreground" />}
+              {i === 3 && <AlertCircle className="h-4 w-4 text-muted-foreground" />}
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">
+                    {i === 0 && stats.total_members?.toLocaleString()}
+                    {i === 1 && stats.active_loans}
+                    {i === 2 && formatCurrency(stats.total_savings)}
+                    {i === 3 && stats.pending_kyc}
+                  </div>
+                  <p className="text-xs text-muted-foreground flex items-center mt-1">
+                    {i === 0 && (
+                      <>
+                        {stats.members_growth > 0 ? (
+                          <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
+                        )}
+                        {stats.members_growth > 0 ? '+' : ''}{stats.members_growth}%
+                      </>
+                    )}
+                    {i === 1 && (
+                      <>
+                        {stats.loans_growth > 0 ? (
+                          <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
+                        )}
+                        {stats.loans_growth > 0 ? '+' : ''}{stats.loans_growth}%
+                      </>
+                    )}
+                    {i === 2 && (
+                      <>
+                        {stats.savings_growth > 0 ? (
+                          <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
+                        )}
+                        {stats.savings_growth > 0 ? '+' : ''}{stats.savings_growth}%
+                      </>
+                    )}
+                    {i === 3 && (
+                      <>
+                        <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
+                        {stats.kyc_change}%
+                      </>
+                    )}
+                    {' This Month'}
+                  </p>
+                </>
+              )}
+            </CardContent>
           </Card>
+        ))}
+      </div>
 
-          {/* Sidebar - Quick Actions & Subscription */}
-          <div className="flex flex-col gap-6">
-            <QuickActions />
-            <SubscriptionUsage />
-          </div>
-        </div>
-
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Savings & Loan Trend */}
-          <Card className="rounded-2xl border border-neutral-200 p-6">
-            <h2 className="text-lg font-bold text-neutral-900 mb-6">Savings & Loan Trend</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={dashboardData.chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="savings"
-                  stroke="#2563eb"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="loans"
-                  stroke="#d97706"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-
-          {/* Loan Repayment Status */}
-          <Card className="rounded-2xl border border-neutral-200 p-6">
-            <h2 className="text-lg font-bold text-neutral-900 mb-6">Loan Repayment Status</h2>
-            <div className="flex items-center justify-center h-80">
-              <div className="relative w-40 h-40">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="15.915"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="3"
-                  />
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="15.915"
-                    fill="none"
-                    stroke="#16a34a"
-                    strokeWidth="3"
-                    strokeDasharray="85 100"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-neutral-900">85%</span>
-                  <span className="text-xs text-neutral-600">Paid</span>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Activities */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Recent Activities</CardTitle>
+            <CardDescription>Latest member actions and transactions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
               </div>
-            </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Member</TableHead>
+                      <TableHead>Activity</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activities.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          No recent activities
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      activities.map((activity, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-medium">{activity.name}</TableCell>
+                          <TableCell>{activity.action}</TableCell>
+                          <TableCell>
+                            {activity.amount ? formatCurrency(activity.amount) : '—'}
+                          </TableCell>
+                          <TableCell>{activity.date}</TableCell>
+                          <TableCell className="text-right">
+                            <Badge
+                              variant={
+                                activity.status === 'completed'
+                                  ? 'default'
+                                  : activity.status === 'approved'
+                                  ? 'secondary'
+                                  : 'destructive'
+                              }
+                            >
+                              {activity.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                              {activity.status === 'completed' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                              {activity.status === 'approved' && <BadgeCheck className="h-3 w-3 mr-1" />}
+                              {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+                <div className="mt-4 text-right">
+                  <Button variant="link">View All →</Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions & Subscription */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-3">
+              <Button className="w-full justify-start">
+                <Plus className="mr-2 h-4 w-4" />
+                Add New Member
+              </Button>
+              <Button variant="secondary" className="w-full justify-start">
+                <BadgeCheck className="mr-2 h-4 w-4" />
+                Approve Loan
+              </Button>
+              <Button variant="secondary" className="w-full justify-start">
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Report
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Subscription Usage</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </>
+              ) : (
+                <>
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Users</span>
+                      <span className="font-medium">
+                        {subscription.users_used} of {subscription.users_limit}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {subscription.users_limit - subscription.users_used} users remaining
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Sub-Admins</span>
+                      <span className="font-medium">
+                        {subscription.admins_used} of {subscription.admins_limit}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {subscription.admins_limit - subscription.admins_used} slots remaining
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium">Current Plan</p>
+                        <p className="text-sm text-muted-foreground">
+                          {subscription.plan} • ₦{subscription.price}/month
+                        </p>
+                      </div>
+                      <Button>Upgrade Plan</Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Savings & Loan Trend</CardTitle>
+            <CardDescription>Monthly growth over the last 7 months</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <Skeleton className="h-72 w-full" />
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={(v) => `₦${(v / 1000000).toFixed(1)}M`} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <Line type="monotone" dataKey="savings" stroke="#10b981" strokeWidth={2} name="Savings" />
+                  <Line type="monotone" dataKey="loans" stroke="#3b82f6" strokeWidth={2} name="Loans" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Loan Repayment Rate</CardTitle>
+            <CardDescription>On-time repayment performance</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center h-72">
+            {isLoading ? (
+              <Loader2 className="h-16 w-16 animate-spin" />
+            ) : (
+              <>
+                <div className="relative w-48 h-48">
+                  <svg className="w-48 h-48 transform -rotate-90">
+                    <circle cx="96" cy="96" r="80" stroke="#e5e7eb" strokeWidth="16" fill="none" />
+                    <circle
+                      cx="96"
+                      cy="96"
+                      r="80"
+                      stroke="#10b981"
+                      strokeWidth="16"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 80}`}
+                      strokeDashoffset={`${2 * Math.PI * 80 * (1 - repaymentRate / 100)}`}
+                      className="transition-all duration-1000"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-5xl font-bold text-green-600">{repaymentRate}%</span>
+                  </div>
+                </div>
+                <p className="mt-6 text-lg font-medium">Excellent repayment performance</p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

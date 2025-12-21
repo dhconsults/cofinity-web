@@ -76,6 +76,14 @@ export default function ProtectedLayout({ children, navbarTitle }: ProtectedLayo
         return "Users Management";
       case "/settings":
         return "System Settings";
+      case "/upcoming-payments" :
+        return "Upcoming Payments";
+      case "/expenses": 
+        return "Expenses Management"
+      case "/dividends": 
+        return "Dividends"
+      case "/wallet":
+        return "Wallet";
       default:
         return "Dashboard";
     }

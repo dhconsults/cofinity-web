@@ -11,7 +11,7 @@ import {
 
 export default function MemberSkeleton() {
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6 p-5">
       {/* Metric Cards Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[...Array(4)].map((_, i) => (

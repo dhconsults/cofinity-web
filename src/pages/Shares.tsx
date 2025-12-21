@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { Coins, BarChart3, Clock, Gift, Search, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Shares = () => {
+
+  const navigate = useNavigate(); 
+
   const members = [
     {
       name: "Crowther's Foundation",
@@ -46,7 +50,7 @@ const Shares = () => {
     <div className="p-4">
       {/* Header */}
       <div className="flex items-center justify-between ">
-        <button className=" md:mt-0 bg-black text-white rounded-lg py-2 px-4 hover:bg-gray-900 transition">
+        <button className=" md:mt-0 bg-black text-white rounded-lg py-2 px-4 hover:bg-gray-900 transition" onClick={() => navigate('/shares-plan')}>
           Add New Share Plan
         </button>
         <button className="flex gap-2 items-center bg-black text-white rounded-lg py-2 px-4 hover:bg-gray-950 transition">

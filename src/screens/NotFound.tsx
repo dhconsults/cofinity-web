@@ -1,32 +1,45 @@
+// src/screens/NotFound.tsx
+import { Building2, Home, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 export default function NotFound() {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white text-center px-4 md:px-6">
-      {/* Heading */}
-      <h1 className="text-4xl md:text-6xl font-bold mb-4">Oops!</h1>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+      <div className="text-center max-w-md">
+        <div className="inline-flex items-center justify-center mb-8">
+          <div className="bg-gray-900 rounded-full p-6">
+            <Building2 className="w-12 h-12 text-white" />
+          </div>
+        </div>
 
-      {/* 404 Text */}
-      <div className="text-[80px] md:text-[150px] lg:text-[180px] font-extrabold leading-none mb-4">
-        4<span className="mx-2">0</span>4
+        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+        <p className="text-2xl font-semibold text-gray-800 mb-4">Page Not Found</p>
+        <p className="text-gray-600 mb-8">
+          Sorry, we couldn't find the page you're looking for.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button asChild size="lg">
+            <a to="/dashboard">
+              <Home className="mr-2 h-5 w-5" />
+              Go to Dashboard
+            </a>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <a to="/cooperative-selection">Select Cooperative</a>
+          </Button>
+        </div>
+
+        <p className="mt-12 text-sm text-gray-500">
+          Need help?{" "}
+          <a
+            href="mailto:support@cooperative.com"
+            className="font-medium text-gray-900 hover:underline"
+          >
+            Contact support
+          </a>
+        </p>
       </div>
-
-      {/* Subtitle */}
-      <p className="text-base md:text-lg opacity-80 mb-8 max-w-sm md:max-w-none">
-        You are lost.
-      </p>
-
-      {/* Back Button */}
-      <Button
-        variant="outline"
-        className="border-white text-white hover:bg-white hover:text-black transition w-full max-w-xs md:max-w-sm"
-        onClick={() => navigate(-1)} // Go back to previous page
-      >
-        ← Go Back
-      </Button>
     </div>
   );
 }

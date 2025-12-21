@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Menu, Moon, Sun, User, LogOut, Building2, Settings } from "lucide-react";
+import { Bell, Menu, Moon, Sun, User, LogOut, Building2, Settings, NotebookPen } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getData } from "@/lib/storageHelper";
 
 interface NavbarProps {
   setSidebarOpen: (open: boolean) => void;
@@ -24,7 +25,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
-  const { user, tenant, logout } = useAuth();
+  const { user, tenants, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [notifications] = useState(3); // Replace with real count later
@@ -33,6 +34,15 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
     await logout();
     navigate("/login");
   };
+
+
+  ///get the particular tenant from tenants 
+    
+
+    const localCoopId = getData<string | number>("selected_cooperative_id");
+    const tenant = tenants?.find((t) => t.id === localCoopId);
+
+
 
   const initials = user?.name
     ? user.name
@@ -103,7 +113,7 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
             <DropdownMenuContent className="w-64" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.name}</p>
+                  <p className="text-sm font-medium leading-none">{user?.full_name}</p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>
@@ -125,6 +135,17 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
                 <User className="mr-2 h-4 w-4" />
                 <span>Account Settings</span>
               </DropdownMenuItem>
+
+
+              <DropdownMenuItem
+                onClick={() => navigate("/audit-logs")}
+                className="cursor-pointer"
+              >
+                <NotebookPen className="mr-2 h-4 w-4" />
+                <span>Audit Log</span>
+              </DropdownMenuItem>
+
+
 
               <DropdownMenuItem
                 onClick={() => navigate("/cooperative-selection")}

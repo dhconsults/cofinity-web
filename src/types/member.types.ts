@@ -13,6 +13,8 @@ export type Member = {
   balance: number; // in kobo or naira — your choice (we use kobo internally)
   // status: "active" | "inactive" | "suspended";
    updated_at: string;
+  date_of_birth:string; 
+  gender:string;
 
    
   membership_id: string; 
@@ -26,11 +28,23 @@ export type Member = {
     member_type?: "regular" | "vip" | "premium" | "founder";
   };
 
+    passport_photo?: string;
+      id_front?: string;
+      id_back?: string;
+      proof_of_address?: string;
+      signature?: string;
 
-};
 
-export type MemberWithFullName = Member & {
-  full_name: string;
+ 
+    address: string;
+    city: string;
+    state: string;
+    lga: string;
+    branch?: { name: string }; 
+  
+    date_joined: string;
+
+
 };
 
  
