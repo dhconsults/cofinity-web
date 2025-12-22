@@ -1,6 +1,6 @@
+// app/members/add/page.tsx  (or wherever your route is)
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -10,9 +10,8 @@ import {
   Shield,
   UserPlus,
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,9 +30,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
 import { useNavigate } from "react-router-dom";
 import { BRANCH_API, MEMBERS_API } from "@/constants";
+import TopNav from "@/components/TopNav";
 
 const nigerianStates = [
   "Abia",
@@ -83,7 +84,7 @@ export default function AddMember() {
     queryKey: ["branches"],
     queryFn: async () => {
       const res = await apiClient.get(BRANCH_API.LIST);
-      return res.data; // Full payload: { branches: [], quota: {}, ... }
+      return res.data;
     },
   });
 
@@ -115,32 +116,23 @@ export default function AddMember() {
   const [verifyModal, setVerifyModal] = useState<{
     open: boolean;
     type: "bvn" | "nin" | null;
-  }>({
-    open: false,
-    type: null,
-  });
+  }>({ open: false, type: null });
 
   const [verifyId, setVerifyId] = useState("");
 
-  // Mutations
   const createMember = useMutation({
     mutationFn: (data: any) => apiClient.post(MEMBERS_API.CREATE, data),
     onSuccess: (res) => {
-      console.log(res);
-      const { success, message } = res;
-
-      if (!success) {
-        toast.error(message || "Failed to add member");
-        return; // ❗ stop normal success flow
+      if (!res.success) {
+        toast.error(res.message || "Failed to add member");
+        return;
       }
-
       toast.success("Member added successfully!");
       queryClient.invalidateQueries({ queryKey: ["members"] });
       navigate("/members");
     },
     onError: (error: any) => {
-      console.error("Create Member Error:", error);
-      const msg = error.message || "Failed to add member";
+      const msg = error.response?.data?.message || "Failed to add member";
       if (error.response?.status === 403) {
         toast.error("Member limit reached. Upgrade your plan.");
       } else {
@@ -149,31 +141,15 @@ export default function AddMember() {
     },
   });
 
-  //   const verifyIdentity = useMutation({
-  //     mutationFn: ({ type, id }: { type: "bvn" | "nin"; id: string }) =>
-  //       apiClient.post(`/kyc/verify-${type}`, { [type]: id }),
-  //     onSuccess: (res: any, vars) => {
-  //       toast.success(`${vars.type.toUpperCase()} verified successfully!`);
-  //       setVerification(prev => ({ ...prev, [vars.type + "_verified"]: true }));
-  //       setFormData(prev => ({ ...prev, [vars.type]: vars.id }));
-  //       setVerifyModal({ open: false, type: null });
-  //       setVerifyId("");
-  //     },
-  //     onError: () => {
-  //       toast.error("Verification failed. Please check the ID and try again.");
-  //     },
-  //   });
-
   const verifyIdentity = () => {
     toast.info("Coming Soon", {
       description:
-        "Identity verification  will be available in a future update.",
+        "Identity verification will be available in a future update.",
     });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const required = [
       "first_name",
       "last_name",
@@ -184,343 +160,360 @@ export default function AddMember() {
       "city",
       "state",
       "lga",
+      "branch_id",
     ];
+
     for (const field of required) {
-      if (!formData[field as keyof typeof formData]?.trim()) {
-        if (!formData[field as keyof typeof formData]?.toString().trim()) {
-          toast.error(
-            `Please fill ${
-              field === "branch_id" ? "branch" : field.replace(/_/g, " ")
-            }`
-          );
-          return;
-        }
+      if (!formData[field as keyof typeof formData]?.toString().trim()) {
+        toast.error(`Please fill in ${field.replace(/_/g, " ")}`);
+        return;
       }
     }
 
     createMember.mutate({
       ...formData,
       branch_id: Number(formData.branch_id),
+      monthly_savings_target: formData.monthly_savings_target || 0,
       bvn_verified: verification.bvn_verified,
       nin_verified: verification.nin_verified,
-
-      monthly_savings_target: formData.monthly_savings_target || 0,
     });
   };
 
   return (
-    <div className=" bg-neutral-50 p-6">
-      <div className="mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Add New Member</h1>
-              <p className="text-neutral-600">
-                Register a new cooperative member
-              </p>
-            </div>
-          </div>
-          <UserPlus className="w-10 h-10 text-neutral-400" />
-        </div>
+    <div className="   bg-gray-50">
+      {" "}
+      {/* This allows it to scroll with the layout */}
+      {/* Page Header - Not sticky, flows with content */}
+      <TopNav
+        title="Add New Member"
+        description="Register a new cooperative member"
+        icon={<UserPlus className="h-8 w-8 text-gray-400 hidden sm:block" />}
+        link="/members"
+      />
+      {/* Main Form Content */}
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="mx-auto ">
+          <form id="add-member-form" onSubmit={handleSubmit} />
 
-        <form onSubmit={handleSubmit} className="">
-          {/* Personal Info */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-6">Personal Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>First Name *</Label>
-                <Input
-                  value={formData.first_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, first_name: e.target.value })
-                  }
-                  placeholder="John"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Last Name *</Label>
-                <Input
-                  value={formData.last_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, last_name: e.target.value })
-                  }
-                  placeholder="Doe"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Other Name</Label>
-                <Input
-                  value={formData.other_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, other_name: e.target.value })
-                  }
-                  placeholder="Middle name (optional)"
-                />
-              </div>
-              <div className="space-y-2 w-full">
-                <Label>Gender *</Label>
-                <Select
-                  onValueChange={(v) => setFormData({ ...formData, gender: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Date of Birth *</Label>
-                <Input
-                  type="date"
-                  value={formData.date_of_birth}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date_of_birth: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Contact */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-6">Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Phone Number *</Label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="+2348012345678"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="john@example.com"
-                />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Building2 className="w-6 h-6" />
-              Assign to Branch
-            </h2>
-            <div className="max-w-md">
-              <Label>Branch *</Label>
-              {branchesLoading ? (
-                <div className="h-10 bg-neutral-100 rounded-lg animate-pulse" />
-              ) : branches.length === 0 ? (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    No branches found.{" "}
-                    <a href="/branches" className="underline font-medium">
-                      Create a branch first
-                    </a>
-                    .
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <Select
-                  value={formData.branch_id}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, branch_id: value })
-                  }
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select a branch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches.map((branch: any) => (
-                      <SelectItem key={branch.id} value={String(branch.id)}>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-neutral-500" />
-                          <div>
-                            <div className="font-medium">{branch.name}</div>
-                            <div className="text-xs text-neutral-500">
-                              {branch.city}, {branch.state}
-                            </div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {!formData.branch_id && formData.branch_id !== "" && (
-                <p className="text-xs text-red-600 mt-1">
-                  Please select a branch
-                </p>
-              )}
-            </div>
-          </Card>
-
-          {/* KYC Verification */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Shield className="w-6 h-6" /> Identity Verification
-            </h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <Label>BVN</Label>
-                <div className="flex gap-3">
-                  <Input
-                    value={formData.bvn}
-                    disabled={verification.bvn_verified}
-                    placeholder="11 digits"
-                    maxLength={11}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        bvn: e.target.value.replace(/\D/g, "").slice(0, 11),
-                      })
-                    }
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => setVerifyModal({ open: true, type: "bvn" })}
-                    disabled={verification.bvn_verified}
-                    variant={verification.bvn_verified ? "outline" : "default"}
-                  >
-                    {verification.bvn_verified ? "Verified" : "Verify"}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>NIN</Label>
-                <div className="flex gap-3">
-                  <Input
-                    value={formData.nin}
-                    disabled={verification.nin_verified}
-                    placeholder="11 digits"
-                    maxLength={11}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        nin: e.target.value.replace(/\D/g, "").slice(0, 11),
-                      })
-                    }
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => setVerifyModal({ open: true, type: "nin" })}
-                    disabled={verification.nin_verified}
-                    variant={verification.nin_verified ? "outline" : "default"}
-                  >
-                    {verification.nin_verified ? "Verified" : "Verify"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Address */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-6">Address</h2>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label>Full Address *</Label>
-                <textarea
-                  rows={3}
-                  className="w-full rounded-lg border border-neutral-200 p-3 focus:border-black focus:ring-black"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  placeholder="123 Example Street..."
-                />
-              </div>
-              <div className="grid md:grid-cols-3 gap-6">
+          {/* Personal Information */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>City *</Label>
+                  <Label>First Name *</Label>
                   <Input
-                    value={formData.city}
+                    value={formData.first_name}
                     onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
+                      setFormData({ ...formData, first_name: e.target.value })
                     }
+                    placeholder="John"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>State *</Label>
+                  <Label>Last Name *</Label>
+                  <Input
+                    value={formData.last_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, last_name: e.target.value })
+                    }
+                    placeholder="Doe"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Other Name</Label>
+                  <Input
+                    value={formData.other_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, other_name: e.target.value })
+                    }
+                    placeholder="Middle name (optional)"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Gender *</Label>
                   <Select
                     onValueChange={(v) =>
-                      setFormData({ ...formData, state: v })
+                      setFormData({ ...formData, gender: v })
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select state" />
+                      <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
-                      {nigerianStates.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s} State
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>LGA *</Label>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>Date of Birth *</Label>
                   <Input
-                    value={formData.lga}
+                    type="date"
+                    value={formData.date_of_birth}
                     onChange={(e) =>
-                      setFormData({ ...formData, lga: e.target.value })
+                      setFormData({
+                        ...formData,
+                        date_of_birth: e.target.value,
+                      })
                     }
                   />
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Information</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>Phone Number *</Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    placeholder="+2348012345678"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="john@example.com"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Branch Assignment */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Assign to Branch
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-w-md">
+                  <Label>Branch *</Label>
+                  {branchesLoading ? (
+                    <div className="mt-2 h-10 bg-gray-100 rounded-lg animate-pulse" />
+                  ) : branches.length === 0 ? (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        No branches found.{" "}
+                        <a href="/branches" className="underline font-medium">
+                          Create a branch first
+                        </a>
+                        .
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <Select
+                      value={formData.branch_id}
+                      onValueChange={(v) =>
+                        setFormData({ ...formData, branch_id: v })
+                      }
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Select a branch" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {branches.map((branch: any) => (
+                          <SelectItem key={branch.id} value={String(branch.id)}>
+                            <div className="flex items-center gap-3">
+                              <Building2 className="h-4 w-4 text-gray-500" />
+                              <div>
+                                <div className="font-medium">{branch.name}</div>
+                                <div className="text-xs text-gray-500">
+                                  {branch.city}, {branch.state}
+                                </div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Identity Verification */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Identity Verification (Optional)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>BVN</Label>
+                  <div className="flex gap-3">
+                    <Input
+                      value={formData.bvn}
+                      disabled={verification.bvn_verified}
+                      placeholder="11 digits"
+                      maxLength={11}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          bvn: e.target.value.replace(/\D/g, "").slice(0, 11),
+                        })
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant={
+                        verification.bvn_verified ? "outline" : "default"
+                      }
+                      disabled={verification.bvn_verified}
+                      onClick={() =>
+                        setVerifyModal({ open: true, type: "bvn" })
+                      }
+                    >
+                      {verification.bvn_verified ? "Verified" : "Verify"}
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>NIN</Label>
+                  <div className="flex gap-3">
+                    <Input
+                      value={formData.nin}
+                      disabled={verification.nin_verified}
+                      placeholder="11 digits"
+                      maxLength={11}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          nin: e.target.value.replace(/\D/g, "").slice(0, 11),
+                        })
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant={
+                        verification.nin_verified ? "outline" : "default"
+                      }
+                      disabled={verification.nin_verified}
+                      onClick={() =>
+                        setVerifyModal({ open: true, type: "nin" })
+                      }
+                    >
+                      {verification.nin_verified ? "Verified" : "Verify"}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Address */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Address</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Full Address *</Label>
+                  <Textarea
+                    rows={3}
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    placeholder="123 Example Street, Off Main Road..."
+                    className="resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label>City *</Label>
+                    <Input
+                      value={formData.city}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>State *</Label>
+                    <Select
+                      onValueChange={(v) =>
+                        setFormData({ ...formData, state: v })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {nigerianStates.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s} State
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>LGA *</Label>
+                    <Input
+                      value={formData.lga}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lga: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Submit Buttons */}
+            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(-1)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createMember.isPending}
+                form="add-member-form"
+                className="bg-black hover:bg-gray-900 text-white"
+              >
+                {createMember.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding Member...
+                  </>
+                ) : (
+                  "Add Member"
+                )}
+              </Button>
             </div>
-          </Card>
-
-          {/* Submit */}
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate(-1)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={createMember.isPending}
-              className="bg-black hover:bg-neutral-900"
-            >
-              {createMember.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Adding Member...
-                </>
-              ) : (
-                "Add Member"
-              )}
-            </Button>
           </div>
-        </form>
+        </div>
       </div>
-
       {/* Verification Modal */}
       <Dialog
         open={verifyModal.open}
-        onOpenChange={() => setVerifyModal({ open: false, type: null })}
+        onOpenChange={(open) =>
+          !open && setVerifyModal({ open: false, type: null })
+        }
       >
         <DialogContent>
           <DialogHeader>
@@ -529,7 +522,7 @@ export default function AddMember() {
               Enter the member's {verifyModal.type} to verify identity
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 py-4">
             <Input
               value={verifyId}
               onChange={(e) =>
@@ -537,11 +530,13 @@ export default function AddMember() {
               }
               placeholder="Enter 11-digit number"
               maxLength={11}
+              autoFocus
             />
             <Alert>
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                This will verify the identity through our secure API.
+                This will verify the identity through our secure partner
+                (Korapay).
               </AlertDescription>
             </Alert>
           </div>
@@ -552,10 +547,7 @@ export default function AddMember() {
             >
               Cancel
             </Button>
-            <Button
-              onClick={() => verifyIdentity()} // verifyIdentity.mutate({ type: verifyModal.type!, id: verifyId })}
-              disabled={verifyId.length !== 11}
-            >
+            <Button onClick={verifyIdentity} disabled={verifyId.length !== 11}>
               Verify
             </Button>
           </DialogFooter>

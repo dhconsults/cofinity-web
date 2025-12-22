@@ -10,10 +10,6 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        // added a `primary` variant and made it the default below —
-        // this uses explicit black/white colors and dark-mode inversions
-        primary:
-          "bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
@@ -34,8 +30,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      // set primary as the default variant
-      variant: "primary",
+      variant: "default",
       size: "default",
     },
   }
@@ -43,8 +38,8 @@ const buttonVariants = cva(
 
 function Button({
   className,
-  variant,
-  size,
+  variant = "default",
+  size = "default",
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &
@@ -56,6 +51,8 @@ function Button({
   return (
     <Comp
       data-slot="button"
+      data-variant={variant}
+      data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

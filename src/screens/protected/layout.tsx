@@ -11,41 +11,32 @@ import { getData } from "@/lib/storageHelper";
 
 interface ProtectedLayoutProps {
   children: ReactNode;
-  navbarTitle: string;        // ← ADD THIS LINE
+  navbarTitle: string; // ← ADD THIS LINE
 }
 
-
-export default function ProtectedLayout({ children, navbarTitle }: ProtectedLayoutProps) {
+export default function ProtectedLayout({
+  children,
+  navbarTitle,
+}: ProtectedLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isLoading, isAuthenticated } = useAuth();
   const router = useNavigate();
 
-  //check if user has verify login ? 
+  //check if user has verify login ?
 
-      const res = getData('isLoginVerified');
- 
-
+  const res = getData("isLoginVerified");
 
   // Redirect to login when the auth state is known and the user is unauthenticated.
   // Do this inside useEffect so we don't perform navigation during render
   // (which causes the "Cannot update a component while rendering a different component" error).
   useEffect(() => {
-
-
-
     if (!isLoading && !isAuthenticated) {
       router("/login", { replace: true });
     }
 
-
-
- 
-
-  if(res == false || res == null &&  !isLoading){ 
-    router('verify-login', {replace:true})
-  }
-  
-
+    if (res == false || (res == null && !isLoading)) {
+      router("verify-login", { replace: true });
+    }
   }, [isLoading, isAuthenticated, router, res]);
 
   const getNavbarTitle = () => {
@@ -57,9 +48,9 @@ export default function ProtectedLayout({ children, navbarTitle }: ProtectedLayo
         return "Welcome, Admin";
       case "/members":
         return "Members Overview";
-      case "/branches": 
+      case "/branches":
         return "Branch Management";
-       
+
       case "/loans":
         return "Loans Management";
       case "/savings":
@@ -76,12 +67,12 @@ export default function ProtectedLayout({ children, navbarTitle }: ProtectedLayo
         return "Users Management";
       case "/settings":
         return "System Settings";
-      case "/upcoming-payments" :
+      case "/upcoming-payments":
         return "Upcoming Payments";
-      case "/expenses": 
-        return "Expenses Management"
-      case "/dividends": 
-        return "Dividends"
+      case "/expenses":
+        return "Expenses Management";
+      case "/dividends":
+        return "Dividends";
       case "/wallet":
         return "Wallet";
       default:
@@ -138,7 +129,7 @@ export default function ProtectedLayout({ children, navbarTitle }: ProtectedLayo
       </div>
 
       {/* Toaster */}
-      <Toaster position="top-right" richColors />
+      {/* <Toaster position="top-right" richColors /> */}
     </div>
   );
 }

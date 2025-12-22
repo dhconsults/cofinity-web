@@ -91,7 +91,7 @@ function App() {
 
   return (
     <>
-      <Toaster position="top-center" richColors />
+      <Toaster position="top-right" richColors />
 
       {/* Auth / Public Routes – no Layout */}
       {isAuthPage ? (
@@ -156,8 +156,14 @@ function App() {
               <Route path="/loan-products" element={<LoanSettingsPage />} />
 
               <Route path="/savings" element={<Savings />} />
-              <Route path="/savings-products" element={<SavingsSettingsPage />} />
-              <Route path="/savings/accounts/:id" element={<SavingsAccountDetail />} />
+              <Route
+                path="/savings-products"
+                element={<SavingsSettingsPage />}
+              />
+              <Route
+                path="/savings/accounts/:id"
+                element={<SavingsAccountDetail />}
+              />
 
               <Route path="/shares" element={<MemberShareAccountsPage />} />
               <Route path="/shares-plan" element={<SharesPlansPage />} />
@@ -175,7 +181,10 @@ function App() {
               <Route path="/audit-logs" element={<AuditLogPage />} />
               <Route path="/dividends" element={<DividendsPage />} />
 
-              <Route path="/upcoming-payments" element={<UpcomingPaymentsPage />} />
+              <Route
+                path="/upcoming-payments"
+                element={<UpcomingPaymentsPage />}
+              />
               <Route path="/loan-repayments" element={<LoanRepaymentPage />} />
 
               {/* Billing */}
@@ -194,8 +203,6 @@ function App() {
       {/* <Routes>
         <Route path="*" element={<NotFound />} />
       </Routes> */}
-
-
     </>
   );
 }
