@@ -8,6 +8,7 @@ import {
   Settings,
   Download,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Loan {
   name: string;
@@ -94,15 +95,21 @@ const Loans = () => {
             <Download size={18} />
             Export Report
           </button>
-          <button className="flex items-center border-2 border-black py-2 px-4 rounded-lg gap-2 text-black cursor-pointer hover:border-gray-900 transition-colors">
+          <Link
+            to="/loans/LoanSettings"
+            className="flex items-center border-2 border-black py-2 px-4 rounded-lg gap-2 text-black cursor-pointer hover:border-gray-900 transition-colors"
+          >
             <Settings size={18} />
             Settings
-          </button>
+          </Link>
         </div>
         <div className=" mt-4 sm:mt-0">
-          <button className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900">
+          <Link
+            to="/loans/LoanApplicationForm"
+            className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900"
+          >
             New Loan Application
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -157,7 +164,7 @@ const Loans = () => {
       </div>
 
       {/* Search Section */}
-      <div className="mt-8 md:flex gap-4">
+      <div className="mt-8 md:flex gap-4 justify-between">
         <div className="relative w-full">
           <input
             type="text"

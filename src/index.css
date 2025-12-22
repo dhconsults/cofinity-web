@@ -6,29 +6,29 @@
 /* font  */
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/src/assets/font/Inter/static/Inter_24pt-Regular.ttf') format('truetype'); 
+  font-family: "Inter";
+  src: url("/src/assets/font/Inter/static/Inter_24pt-Regular.ttf")
+    format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Poppins';
-  src: url('/src/assets/font/Poppins/Poppins-Regular.ttf') format('truetype'); 
+  font-family: "Poppins";
+  src: url("/src/assets/font/Poppins/Poppins-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Roboto';
-  src: url('/src/assets/font/Roboto/static/Roboto-Regular.ttf') format('truetype'); 
+  font-family: "Roboto";
+  src: url("/src/assets/font/Roboto/static/Roboto-Regular.ttf")
+    format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
-*{
-  font-family: 'Poppins', sans-serif;
+* {
+  font-family: "Poppins", sans-serif;
 }
-
-
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -146,11 +146,13 @@
   }
 }
 
-
-
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .animate-shimmer {
