@@ -11,38 +11,7 @@ import {
   AlertCircle,
   FileText,
 } from "lucide-react";
-import {
-  Plus,
-  Share2,
-  Users,
-  DollarSign,
-  Search,
-  Download,
-  AlertCircle,
-  FileText,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
@@ -85,15 +54,11 @@ export default function MemberShareAccountsPage() {
     queryKey: ["member-share-accounts-quota"],
     queryFn: () =>
       apiClient.get(MEMBER_SHARE_ACCOUNT_API.QUOTA).then((res) => res),
-    queryFn: () =>
-      apiClient.get(MEMBER_SHARE_ACCOUNT_API.QUOTA).then((res) => res),
   });
 
   // Fetch accounts
   const { data: response, isLoading } = useQuery({
     queryKey: ["member-share-accounts"],
-    queryFn: () =>
-      apiClient.get(MEMBER_SHARE_ACCOUNT_API.LIST).then((res) => res),
     queryFn: () =>
       apiClient.get(MEMBER_SHARE_ACCOUNT_API.LIST).then((res) => res),
   });
@@ -108,20 +73,9 @@ export default function MemberShareAccountsPage() {
       acc.member.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       acc.member.member_number.includes(searchTerm) ||
       acc.shares_plan.name.toLowerCase().includes(searchTerm.toLowerCase())
-  const filteredAccounts = accounts.filter(
-    (acc) =>
-      acc.member.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      acc.member.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      acc.member.member_number.includes(searchTerm) ||
-      acc.shares_plan.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Stats
-  const totalValue = accounts.reduce(
-    (sum, acc) => sum + parseFloat(acc.total_value.toString()),
-    0
-  );
-  const activeAccounts = accounts.filter((acc) => acc.is_active).length;
   const totalValue = accounts.reduce(
     (sum, acc) => sum + parseFloat(acc.total_value.toString()),
     0
@@ -133,9 +87,6 @@ export default function MemberShareAccountsPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
     null
   );
-  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(
-    null
-  );
   const [historyOpen, setHistoryOpen] = useState(false);
 
   return (
@@ -144,13 +95,12 @@ export default function MemberShareAccountsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           {quotaData && (
-          {quotaData && (
             <div className="text-sm text-gray-600 border border-gray-300 px-4 py-2 rounded-md bg-white">
               {quotaData.used} / {quotaData.limit} accounts
             </div>
           )}
         </div>
-        <div className="flex items-center gap-4 max-w-full ">
+        <div className="flex items-center gap-4">
           <Button
             onClick={() => setOpen(true)}
             disabled={!canCreate}
@@ -163,9 +113,6 @@ export default function MemberShareAccountsPage() {
           <Button className=" " onClick={() => navigate("/shares-plan")}>
             Add New Share Plan
           </Button>
-          <Button className=" " onClick={() => navigate("/shares-plan")}>
-            Add New Share Plan
-          </Button>
         </div>
       </div>
 
@@ -175,12 +122,6 @@ export default function MemberShareAccountsPage() {
           <div className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-yellow-700" />
             <p className="text-sm text-yellow-700">
-              You've reached your share account limit ({quotaData.used}/
-              {quotaData.limit}).{" "}
-              <button
-                onClick={() => navigate("/upgrade")}
-                className="underline font-medium"
-              >
               You've reached your share account limit ({quotaData.used}/
               {quotaData.limit}).{" "}
               <button
@@ -202,15 +143,9 @@ export default function MemberShareAccountsPage() {
             <CardTitle className="text-sm font-medium">
               Total Share Value
             </CardTitle>
-            <CardTitle className="text-sm font-medium">
-              Total Share Value
-            </CardTitle>
             <DollarSign className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              ₦{totalValue.toLocaleString()}
-            </div>
             <div className="text-2xl font-bold">
               ₦{totalValue.toLocaleString()}
             </div>
@@ -220,9 +155,6 @@ export default function MemberShareAccountsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Share Accounts
-            </CardTitle>
             <CardTitle className="text-sm font-medium">
               Active Share Accounts
             </CardTitle>
@@ -239,15 +171,9 @@ export default function MemberShareAccountsPage() {
             <CardTitle className="text-sm font-medium">
               Total Members with Shares
             </CardTitle>
-            <CardTitle className="text-sm font-medium">
-              Total Members with Shares
-            </CardTitle>
             <Share2 className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {new Set(accounts.map((a) => a.member_id)).size}
-            </div>
             <div className="text-2xl font-bold">
               {new Set(accounts.map((a) => a.member_id)).size}
             </div>
@@ -291,20 +217,7 @@ export default function MemberShareAccountsPage() {
                         Loading...
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        Loading...
-                      </TableCell>
-                    </TableRow>
                   ) : filteredAccounts.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center py-12 text-gray-500"
-                      >
-                        No share accounts found.
-                      </TableCell>
-                    </TableRow>
                     <TableRow>
                       <TableCell
                         colSpan={6}
@@ -324,12 +237,6 @@ export default function MemberShareAccountsPage() {
                             <p className="text-sm text-gray-500">
                               #{acc.member.member_number}
                             </p>
-                            <p className="font-medium">
-                              {acc.member.first_name} {acc.member.last_name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              #{acc.member.member_number}
-                            </p>
                           </div>
                         </TableCell>
                         <TableCell>{acc.shares_plan.name}</TableCell>
@@ -341,15 +248,6 @@ export default function MemberShareAccountsPage() {
                           ).toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          ₦
-                          {parseFloat(
-                            acc.total_value.toString()
-                          ).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={acc.is_active ? "default" : "secondary"}
-                          >
                           <Badge
                             variant={acc.is_active ? "default" : "secondary"}
                           >
@@ -361,20 +259,6 @@ export default function MemberShareAccountsPage() {
                         </TableCell>
 
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            {/* ... existing buttons ... */}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setSelectedAccountId(acc.id);
-                                setHistoryOpen(true);
-                              }}
-                            >
-                              <FileText className="w-4 h-4" /> History
-                            </Button>
-                          </div>
-                        </TableCell>
                           <div className="flex items-center gap-2">
                             {/* ... existing buttons ... */}
                             <Button
@@ -405,15 +289,7 @@ export default function MemberShareAccountsPage() {
           <Card>
             <CardContent className="py-8 text-center">Loading...</CardContent>
           </Card>
-          <Card>
-            <CardContent className="py-8 text-center">Loading...</CardContent>
-          </Card>
         ) : filteredAccounts.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-gray-500">
-              No share accounts found.
-            </CardContent>
-          </Card>
           <Card>
             <CardContent className="py-12 text-center text-gray-500">
               No share accounts found.
@@ -428,9 +304,6 @@ export default function MemberShareAccountsPage() {
                     <CardTitle className="text-lg">
                       {acc.member.first_name} {acc.member.last_name}
                     </CardTitle>
-                    <CardDescription>
-                      #{acc.member.member_number}
-                    </CardDescription>
                     <CardDescription>
                       #{acc.member.member_number}
                     </CardDescription>
@@ -454,9 +327,6 @@ export default function MemberShareAccountsPage() {
                   <span className="font-medium">
                     ₦{parseFloat(acc.total_value.toString()).toLocaleString()}
                   </span>
-                  <span className="font-medium">
-                    ₦{parseFloat(acc.total_value.toString()).toLocaleString()}
-                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Linked Savings</span>
@@ -464,19 +334,6 @@ export default function MemberShareAccountsPage() {
                 </div>
 
                 <div className="pt-4 flex gap-2 border-t">
-                  {/* ... existing buttons ... */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedAccountId(acc.id);
-                      setHistoryOpen(true);
-                    }}
-                    className="flex-1"
-                  >
-                    <FileText className="w-4 h-4 mr-1" /> History
-                  </Button>
-                </div>
                   {/* ... existing buttons ... */}
                   <Button
                     size="sm"
@@ -503,19 +360,10 @@ export default function MemberShareAccountsPage() {
             <DialogTitle className="text-xl font-bold">
               Purchase Shares for Member
             </DialogTitle>
-            <DialogTitle className="text-xl font-bold">
-              Purchase Shares for Member
-            </DialogTitle>
           </DialogHeader>
           <PurchaseSharesForm
             onSuccess={() => {
               setOpen(false);
-              queryClient.invalidateQueries({
-                queryKey: ["member-share-accounts"],
-              });
-              queryClient.invalidateQueries({
-                queryKey: ["member-share-accounts-quota"],
-              });
               queryClient.invalidateQueries({
                 queryKey: ["member-share-accounts"],
               });
@@ -536,14 +384,6 @@ export default function MemberShareAccountsPage() {
           if (!open) setSelectedAccountId(null);
         }}
       />
-        accountId={selectedAccountId!}
-        open={historyOpen}
-        onOpenChange={(open) => {
-          setHistoryOpen(open);
-          if (!open) setSelectedAccountId(null);
-        }}
-      />
     </div>
   );
 }
-

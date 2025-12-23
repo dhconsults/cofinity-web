@@ -99,8 +99,8 @@ export default function SavingsAccountTab({ memberId }: Props) {
 
   /* ===== Queries ===== */
 
-  const { data: member, isLoading } = useQuery<Member>({
-    queryKey: ["member-savings", memberId],
+  const { data: accountsResponse, isLoading } = useQuery<SavingsAccount[]>({
+    queryKey: ["savings-accounts", memberId],
     queryFn: async () => {
       const res = await apiClient.get(MEMBERS_API.SAVINGSACCOUNTS(memberId));
       return res.data;
@@ -128,6 +128,8 @@ export default function SavingsAccountTab({ memberId }: Props) {
       return res.data.products || [];
     },
   });
+
+  console.log("accountsResponse", accountsResponse);
 
   const savingsAccounts = accountsResponse || [];
 
@@ -159,11 +161,13 @@ export default function SavingsAccountTab({ memberId }: Props) {
       toast.error(err?.message || "Failed to create account"),
   });
 
-  const formatCurrency = (amount: number) =>
-    `₦${amount.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
+  const formatCurrency = (amount: number | undefined) =>
+    amount === undefined || amount === null
+      ? "₦0.00"
+      : `₦${amount.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
 
   /* ================= LOADING ================= */
 
