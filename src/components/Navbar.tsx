@@ -2,7 +2,17 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Menu, Moon, Sun, User, LogOut, Building2, Settings, NotebookPen } from "lucide-react";
+import {
+  Bell,
+  Menu,
+  Moon,
+  Sun,
+  User,
+  LogOut,
+  Building2,
+  Settings,
+  NotebookPen,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,17 +45,13 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
     navigate("/login");
   };
 
+  ///get the particular tenant from tenants
 
-  ///get the particular tenant from tenants 
-    
+  const localCoopId = getData<string | number>("selected_cooperative_id");
+  const tenant = tenants?.find((t) => t.id === localCoopId);
 
-    const localCoopId = getData<string | number>("selected_cooperative_id");
-    const tenant = tenants?.find((t) => t.id === localCoopId);
-
-
-
-  const initials = user?.name
-    ? user.name
+  const initials = user?.first_name
+    ? user.last_name
         .split(" ")
         .map((n) => n[0])
         .join("")
@@ -100,7 +106,10 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
           {/* Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full"
+              >
                 <Avatar className="h-10 w-10 border-2 border-gray-300 dark:border-gray-700">
                   <AvatarImage src={user?.avatar} alt={user?.name} />
                   <AvatarFallback className="bg-black text-white font-bold">
@@ -113,7 +122,9 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
             <DropdownMenuContent className="w-64" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.full_name}</p>
+                  <p className="text-sm font-medium leading-none">
+                    {user?.full_name}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>
@@ -136,7 +147,6 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
                 <span>Account Settings</span>
               </DropdownMenuItem>
 
-
               <DropdownMenuItem
                 onClick={() => navigate("/audit-logs")}
                 className="cursor-pointer"
@@ -144,8 +154,6 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
                 <NotebookPen className="mr-2 h-4 w-4" />
                 <span>Audit Log</span>
               </DropdownMenuItem>
-
-
 
               <DropdownMenuItem
                 onClick={() => navigate("/cooperative-selection")}

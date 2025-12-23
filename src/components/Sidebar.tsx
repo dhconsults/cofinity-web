@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, Link, useNavigate, href } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Home,
   Users,
@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
   const menuItems = [
     { name: "Dashboard", icon: <Home size={18} />, href: "/dashboard" },
-    
+
     { name: "Wallet", icon: <Home size={18} />, href: "/wallet" },
 
     { name: "Branches", icon: <Home size={18} />, href: "/branches" },
@@ -32,10 +32,17 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     { name: "Loans", icon: <DollarSign size={18} />, href: "/loans" },
     { name: "Savings", icon: <PiggyBank size={18} />, href: "/savings" },
     { name: "Shares", icon: <Coins size={18} />, href: "/shares" },
-    {name: "Dividends", icon: <Coins size={18} />, href: "/dividends"}, 
-    { name: "Upcoming Payments", icon: <DollarSign size={18} />, href: "/upcoming-payments"},
-    { name: "Loan Repayment", icon: <DollarSign size={18} />, href: "/loan-repayments"},
-
+    { name: "Dividends", icon: <Coins size={18} />, href: "/dividends" },
+    {
+      name: "Upcoming Payments",
+      icon: <DollarSign size={18} />,
+      href: "/upcoming-payments",
+    },
+    {
+      name: "Loan Repayment",
+      icon: <DollarSign size={18} />,
+      href: "/loan-repayments",
+    },
 
     {
       name: "Transactions",
@@ -43,6 +50,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       href: "/transactions",
     },
     { name: "Expenses", icon: <Shield size={18} />, href: "/expenses" },
+    { name: "Broadcast Message", icon: <Home size={18} />, href: "/broadcast" },
+
     { name: "Report", icon: <FileText size={18} />, href: "/report" },
     { name: "Users", icon: <Users size={18} />, href: "/user" },
     { name: "Settings", icon: <Settings size={18} />, href: "/settings" },

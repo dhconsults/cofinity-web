@@ -45,7 +45,7 @@ type NextOfKin = {
   id: number;
   full_name: string;
   relationship: string; // e.g., Spouse, Child, Parent, Sibling
-  phone: string;
+  phone_number: string;
   email?: string | null;
   address?: string | null;
   created_at: string;
@@ -61,7 +61,7 @@ type Member = {
 const nextOfKinSchema = z.object({
   full_name: z.string().min(3, "Full name is required"),
   relationship: z.string().min(2, "Relationship is required"),
-  phone: z.string().min(10, "Valid phone number required"),
+  phone_number: z.string().min(10, "Valid phone number required"),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
   address: z.string().optional(),
 });
@@ -92,7 +92,8 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
       setOpenAdd(false);
       resetForm();
     },
-    onError: () => toast.error("Failed to add next of kin"),
+    onError: (err: any) =>
+      toast.error("Failed to add next of kin", { description: err.message }),
   });
 
   const updateMutation = useMutation({
@@ -136,7 +137,7 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
     reset({
       full_name: "",
       relationship: "",
-      phone: "",
+      phone_number: "",
       email: "",
       address: "",
     });
@@ -152,7 +153,7 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
     setEditingKin(kin);
     setValue("full_name", kin.full_name);
     setValue("relationship", kin.relationship);
-    setValue("phone", kin.phone);
+    setValue("phone_number", kin.phone_number);
     setValue("email", kin.email || "");
     setValue("address", kin.address || "");
     setOpenEdit(true);
@@ -218,12 +219,12 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  {...register("phone")}
+                  {...register("phone_number")}
                   placeholder="08012345678"
                 />
-                {errors.phone && (
+                {errors.phone_number && (
                   <p className="text-sm text-red-600 mt-1">
-                    {errors.phone.message}
+                    {errors.phone_number.message}
                   </p>
                 )}
               </div>
@@ -314,7 +315,7 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-gray-500" />
-                  <span>{kin.phone}</span>
+                  <span>{kin.phone_number}</span>
                 </div>
                 {kin.email && (
                   <div className="flex items-center gap-2">
@@ -351,7 +352,7 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
             </div>
             <div>
               <Label htmlFor="edit_phone">Phone Number</Label>
-              <Input id="edit_phone" {...register("phone")} />
+              <Input id="edit_phone" {...register("phone_number")} />
             </div>
             <div>
               <Label htmlFor="edit_email">Email (Optional)</Label>

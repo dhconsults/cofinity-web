@@ -1,6 +1,5 @@
-// App.tsx – Fixed: 404 renders only once (clean full-page, no Layout sidebar)
 import React from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
 // Public / Auth pages
@@ -9,17 +8,14 @@ import VerifyLogin from "./screens/Login/VerifyLogin";
 import ForgotPassword from "./screens/Login/ForgotPassword";
 import Signup from "./screens/Register/Signup";
 import VerifyEmail from "./screens/Register/VerifyEmail";
-
 // Cooperative selection flow
 import CooperativeSelection from "./screens/CreateCooperative/CooperativeSelection";
 import CreateCooperative from "./screens/CreateCooperative/CreateCooperative";
 import ChoosePlan from "./screens/CreateCooperative/SelectPlan";
-
 // Protected layout & pages
 import Layout from "./screens/protected/layout";
 import ProtectedRoute from "./screens/ProtectedRoute";
 import RouteProtected from "./screens/Register/RouteProtected";
-
 // All protected pages
 import DashboardPage from "./screens/protected/dashboard/Dashboard";
 import BranchesManagement from "./screens/protected/branches/Branches";
@@ -47,13 +43,13 @@ import AuditLogPage from "./screens/protected/auditLog/AuditLog";
 import DividendsPage from "./screens/protected/dividends/Dividends";
 import UpcomingPaymentsPage from "./screens/protected/upcomingPayments/UpcomingPaymentsPage";
 import LoanRepaymentPage from "./screens/protected/loanRepayment/LoanRepaymentPage";
-
 // Billing pages
 import BillingPage from "./screens/protected/billing/Billing";
 import UpgradePlanPage from "./screens/protected/billing/Upgrade";
-
 // 404 Page (full page, no Layout)
 import NotFound from "./screens/NotFound";
+import Error500 from "./screens/errors/500";
+import BroadcastMessage from "./screens/protected/broadcast/BroadcastMessage";
 
 function App() {
   const location = useLocation();
@@ -67,6 +63,7 @@ function App() {
     "/cooperative-selection",
     "/create-cooperative",
     "/choose-plan",
+    "/500",
   ];
 
   const isAuthPage = authPaths.includes(location.pathname);
@@ -85,6 +82,10 @@ function App() {
       "/settings": "System Settings",
       "/billing": "Billing & Subscription",
       "/billing/upgrade": "Upgrade Plan",
+      "/wallet": "Wallet Overview",
+      "/broadcast": "Broadcast Message",
+      "/profile": "Your Profile",
+      "/expenses": "Expenses Management",
     };
     return titles[location.pathname] || "Dashboard";
   };
@@ -92,6 +93,11 @@ function App() {
   return (
     <>
       <Toaster position="top-right" richColors />
+      <Routes>
+        <Route path="/500" element={<Error500 />} />
+
+        {/* <Route path="*" element={<NotFound />} /> */}
+      </Routes>
 
       {/* Auth / Public Routes – no Layout */}
       {isAuthPage ? (
@@ -136,7 +142,7 @@ function App() {
           />
 
           {/* 404 for auth section */}
-          <Route path="*" element={<NotFound />} />
+          {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       ) : (
         /* Protected Routes – wrapped in Layout */
@@ -150,10 +156,14 @@ function App() {
               <Route path="/add-member" element={<AddMember />} />
               <Route path="/members/:id" element={<ViewMember />} />
 
+              {/* <Route path="/500" element={<GlobalError />} /> */}
+
               <Route path="/loans" element={<LoansPage />} />
               <Route path="/loans/create" element={<CreateLoanPage />} />
               <Route path="/loans/:id" element={<LoanDetailPage />} />
               <Route path="/loan-products" element={<LoanSettingsPage />} />
+
+              <Route path="/broadcast" element={<BroadcastMessage />} />
 
               <Route path="/savings" element={<Savings />} />
               <Route
@@ -200,9 +210,6 @@ function App() {
 
       {/* Global fallback 404 – renders full page (no Layout) for any unmatched route */}
       {/* This will only trigger if the URL doesn't match any of the above blocks */}
-      {/* <Routes>
-        <Route path="*" element={<NotFound />} />
-      </Routes> */}
     </>
   );
 }

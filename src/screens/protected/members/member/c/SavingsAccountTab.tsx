@@ -1,4 +1,3 @@
-// src/screens/protected/members/member/c/SavingsAccountTab.tsx
 "use client";
 
 import React, { useState } from "react";

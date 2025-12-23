@@ -11,10 +11,16 @@ const api = axios.create({
   },
 });
 
-// Global 401/419 handler
 api.interceptors.response.use(
   (res) => res,
   (error) => {
+    if (error.response?.status === 500) {
+      if (!window.location.pathname.includes("/500")) {
+        window.location.href = "/500";
+      }
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 || error.response?.status === 419) {
       // Only redirect if we're not already on login page
       if (!window.location.pathname.includes("/login")) {

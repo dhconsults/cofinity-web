@@ -236,7 +236,7 @@ export default function ViewMember() {
               }
             >
               {activeTab === "bank-accounts" && (
-                <BankAccountTab member={member} />
+                <BankAccountTab memberId={member.id} />
               )}
             </React.Suspense>
             <React.Suspense fallback={<MemberDetailsSkeleton />}>

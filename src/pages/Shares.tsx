@@ -52,7 +52,7 @@ const Shares = () => {
       <div className="flex items-center justify-between ">
         <button className=" md:mt-0 bg-black text-white rounded-lg py-2 px-4 hover:bg-gray-900 transition" onClick={() => navigate('/shares-plan')}>
           Add New Share Plan
-        </button>
+        </Link>
         <button className="flex gap-2 items-center bg-black text-white rounded-lg py-2 px-4 hover:bg-gray-950 transition">
           <Download size={18} /> Export
         </button>

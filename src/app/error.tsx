@@ -1,9 +1,9 @@
 // app/error.tsx (Next.js 13+ App Router error boundary)
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Building2, AlertCircle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useEffect } from "react";
+import { Building2, AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -13,7 +13,7 @@ interface ErrorProps {
 export default function GlobalError({ error, reset }: ErrorProps) {
   useEffect(() => {
     // Log error to monitoring service (Sentry, etc.) in production
-    console.error('Global error boundary caught:', error);
+    console.error("Global error boundary caught:", error);
   }, [error]);
 
   return (
@@ -34,7 +34,8 @@ export default function GlobalError({ error, reset }: ErrorProps) {
           Something Went Wrong
         </p>
         <p className="text-gray-600 mb-8">
-          We're experiencing technical difficulties. Please try again in a few moments.
+          We're experiencing technical difficulties. Please try again in a few
+          moments.
         </p>
 
         {/* Action Buttons */}
@@ -50,7 +51,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
 
         {/* Support */}
         <p className="mt-12 text-sm text-gray-500">
-          Still having issues?{' '}
+          Still having issues?{" "}
           <a
             href="mailto:support@cooperative.com"
             className="font-medium text-gray-900 hover:underline"
