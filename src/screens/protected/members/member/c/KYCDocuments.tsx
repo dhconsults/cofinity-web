@@ -1,13 +1,27 @@
- // src/components/member/KYCDocuments.tsx
+// src/components/member/KYCDocuments.tsx
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Upload, FileText, CheckCircle, Image, FileCheck, Home, PenTool, X } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  CheckCircle,
+  Image,
+  FileCheck,
+  Home,
+  PenTool,
+  X,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { apiClient } from "@/lib/api-client";
 import { MEMBERS_API } from "@/constants";
 
@@ -27,11 +41,36 @@ export default function KYCDocuments({ member }: { member: any }) {
   }, [member]);
 
   const documents = [
-    { type: "passport_photo", label: "Passport Photo", icon: <Image className="w-6 h-6" />, field: "passport_photo" },
-    { type: "id_front", label: "ID Card (Front)", icon: <FileCheck className="w-6 h-6" />, field: "id_front" },
-    { type: "id_back", label: "ID Card (Back)", icon: <FileCheck className="w-6 h-6" />, field: "id_back" },
-    { type: "proof_of_address", label: "Proof of Address", icon: <Home className="w-6 h-6" />, field: "proof_of_address" },
-    { type: "signature", label: "Signature Specimen", icon: <PenTool className="w-6 h-6" />, field: "signature" },
+    {
+      type: "passport_photo",
+      label: "Passport Photo",
+      icon: <Image className="w-6 h-6" />,
+      field: "passport_photo",
+    },
+    {
+      type: "id_front",
+      label: "ID Card (Front)",
+      icon: <FileCheck className="w-6 h-6" />,
+      field: "id_front",
+    },
+    {
+      type: "id_back",
+      label: "ID Card (Back)",
+      icon: <FileCheck className="w-6 h-6" />,
+      field: "id_back",
+    },
+    {
+      type: "proof_of_address",
+      label: "Proof of Address",
+      icon: <Home className="w-6 h-6" />,
+      field: "proof_of_address",
+    },
+    {
+      type: "signature",
+      label: "Signature Specimen",
+      icon: <PenTool className="w-6 h-6" />,
+      field: "signature",
+    },
   ];
 
   const uploadMutation = useMutation({
@@ -52,7 +91,7 @@ export default function KYCDocuments({ member }: { member: any }) {
       const field = vars.type as keyof typeof localMember;
 
       // Instantly update local state
-      setLocalMember(prev => ({ ...prev, [field]: url }));
+      setLocalMember((prev) => ({ ...prev, [field]: url }));
 
       toast.success(`${vars.type.replace(/_/g, " ")} uploaded!`);
       setUploading(null);
@@ -84,20 +123,27 @@ export default function KYCDocuments({ member }: { member: any }) {
     setPreviewOpen(true);
   };
 
-  const uploadedCount = documents.filter(d => !!localMember[d.field]).length;
+  const uploadedCount = documents.filter((d) => !!localMember[d.field]).length;
 
   return (
     <>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold">KYC Documents</h2>
-            <p className="text-neutral-600 mt-1">Identity verification documents</p>
+            <p className="text-neutral-600 mt-1">
+              Identity verification documents
+            </p>
           </div>
           <div className="text-right">
             <p className="text-sm text-neutral-600">Completion</p>
-            <p className="text-3xl font-bold text-neutral-900">{uploadedCount}/5</p>
-            <Progress value={(uploadedCount / 5) * 100} className="w-40 mt-2 h-4" />
+            <p className="text-3xl font-bold text-neutral-900">
+              {uploadedCount}/5
+            </p>
+            <Progress
+              value={(uploadedCount / 5) * 100}
+              className="w-40 mt-2 h-4"
+            />
           </div>
         </div>
 
@@ -110,7 +156,9 @@ export default function KYCDocuments({ member }: { member: any }) {
               <Card
                 key={doc.type}
                 className={`p-8 text-center transition-all hover:shadow-2xl relative overflow-hidden ${
-                  uploaded ? "border-4 border-emerald-500 bg-emerald-50/30" : "border-2 border-dashed"
+                  uploaded
+                    ? "border-4 border-emerald-500 bg-emerald-50/30"
+                    : "border-2 border-dashed"
                 }`}
               >
                 {uploaded && (
@@ -119,9 +167,13 @@ export default function KYCDocuments({ member }: { member: any }) {
                   </div>
                 )}
 
-                <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
-                  uploaded ? "bg-emerald-100 text-emerald-600" : "bg-neutral-100 text-neutral-400"
-                }`}>
+                <div
+                  className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
+                    uploaded
+                      ? "bg-emerald-100 text-emerald-600"
+                      : "bg-neutral-100 text-neutral-400"
+                  }`}
+                >
                   {doc.icon}
                 </div>
 
@@ -129,7 +181,10 @@ export default function KYCDocuments({ member }: { member: any }) {
 
                 {uploaded ? (
                   <div className="space-y-4">
-                    <Badge variant="default" className="bg-emerald-600 text-white text-base px-4 py-2">
+                    <Badge
+                      variant="default"
+                      className="bg-emerald-600 text-white text-base px-4 py-2"
+                    >
                       <CheckCircle className="w-5 h-5 mr-2" />
                       Uploaded & Verified
                     </Badge>
@@ -144,19 +199,26 @@ export default function KYCDocuments({ member }: { member: any }) {
                     </Button>
                   </div>
                 ) : (
-                  <label htmlFor={`upload-${doc.type}`} className="cursor-pointer block">
+                  <label
+                    htmlFor={`upload-${doc.type}`}
+                    className="cursor-pointer block"
+                  >
                     <div className="border-2 border-dashed border-neutral-300 rounded-xl p-8 hover:border-neutral-500 transition-all">
                       {uploading === doc.type ? (
                         <div className="space-y-4">
                           <div className="w-16 h-16 mx-auto border-4 border-neutral-400 border-t-emerald-600 rounded-full animate-spin" />
-                          <p className="text-sm font-medium">Uploading... {progress}%</p>
+                          <p className="text-sm font-medium">
+                            Uploading... {progress}%
+                          </p>
                           <Progress value={progress} className="h-3" />
                         </div>
                       ) : (
                         <>
                           <Upload className="w-14 h-14 mx-auto text-neutral-400 mb-4" />
                           <p className="font-medium">Click to upload</p>
-                          <p className="text-xs text-neutral-500 mt-1">JPG, PNG, PDF • Max 5MB</p>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            JPG, PNG, PDF • Max 5MB
+                          </p>
                         </>
                       )}
                     </div>
@@ -165,7 +227,9 @@ export default function KYCDocuments({ member }: { member: any }) {
                       type="file"
                       accept="image/*,.pdf"
                       className="hidden"
-                      onChange={(e) => handleFileChange(doc.type, e.target.files?.[0] || null)}
+                      onChange={(e) =>
+                        handleFileChange(doc.type, e.target.files?.[0] || null)
+                      }
                       disabled={uploading === doc.type}
                     />
                   </label>
@@ -178,8 +242,12 @@ export default function KYCDocuments({ member }: { member: any }) {
         {uploadedCount === 5 && (
           <Card className="p-16 text-center bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-300">
             <CheckCircle className="w-24 h-24 text-emerald-600 mx-auto mb-6" />
-            <h3 className="text-3xl font-bold text-emerald-900">KYC Complete!</h3>
-            <p className="text-emerald-700 text-lg mt-3">Member is fully verified and trusted</p>
+            <h3 className="text-3xl font-bold text-emerald-900">
+              KYC Complete!
+            </h3>
+            <p className="text-emerald-700 text-lg mt-3">
+              Member is fully verified and trusted
+            </p>
           </Card>
         )}
       </div>
@@ -219,5 +287,3 @@ export default function KYCDocuments({ member }: { member: any }) {
     </>
   );
 }
-
-      

@@ -197,21 +197,26 @@ export default function SavingsAccountTab({ memberId }: Props) {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Wallet className="w-6 h-6" />
-            Savings Accounts
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-2xl font-bold flex items-center gap-2 truncate">
+            <Wallet className="w-6 h-6 shrink-0" />
+            <span className="truncate">Savings Accounts</span>
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            View all savings products and balances for this member
+          <p className="text-sm text-gray-600 mt-1 truncate">
+            View all savings products and balances <br /> for this member
           </p>
         </div>
 
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Savings Account
-        </Button>
+        <div className="shrink-0">
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className="whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Savings Account
+          </Button>
+        </div>
       </div>
 
       {/* Empty State */}
@@ -329,7 +334,7 @@ export default function SavingsAccountTab({ memberId }: Props) {
       {/* ================= CREATE MODAL ================= */}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-full sm:max-w-lg sm:mx-auto p-6 sm:p-8 rounded-lg">
           <DialogHeader>
             <DialogTitle>Create New Savings Account</DialogTitle>
           </DialogHeader>

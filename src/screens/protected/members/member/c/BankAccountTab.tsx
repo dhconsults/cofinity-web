@@ -67,6 +67,13 @@ type BankAccount = {
   created_at: string;
 };
 
+interface Bank {
+  id: number;
+  code: string;
+  name: string;
+  short_name?: string;
+}
+
 type Member = {
   id: number;
   first_name: string;
@@ -80,12 +87,19 @@ const bankAccountSchema = z.object({
   account_number: z.string().min(10, "Valid account number required"),
   account_name: z.string().min(1, "Account name is required"),
   is_primary: z.boolean().optional(),
+  bank_code: z.string().min(1, "Bank code is required"),
 });
 
 type BankAccountForm = z.infer<typeof bankAccountSchema>;
 
 interface BankAccountTabProps {
   memberId: number;
+}
+
+interface VerificationResult {
+  account_name: string;
+  account_number: string;
+  bank_name: string;
 }
 
 export default function BankAccountTab({ memberId }: BankAccountTabProps) {
@@ -140,6 +154,52 @@ export default function BankAccountTab({ memberId }: BankAccountTabProps) {
     onError: () => toast.error("Failed to update bank account"),
   });
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<BankAccountForm>({
+    resolver: zodResolver(bankAccountSchema),
+  });
+
+  const watchedBankCode = watch("bank_code");
+  const watchedAccountNumber = watch("account_number");
+
+  const [verification, setVerification] = useState<VerificationResult | null>(
+    null
+  );
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+
+  const verifyAccount = async () => {
+    if (!watchedBankCode || watchedAccountNumber.length !== 10) return;
+
+    setVerifying(true);
+    setVerifyError(null);
+    setVerification(null);
+
+    try {
+      const res = await apiClient.post("/api/banks/verify", {
+        bank_code: watchedBankCode,
+        account_number: watchedAccountNumber,
+      });
+
+      setVerification(res.data);
+      toast.success("Account Verified", {
+        description: `Resolved to: ${res.data.account_name}`,
+      });
+    } catch (err: any) {
+      const message = err?.message || "Verification failed";
+      setVerifyError(message);
+      setVerification(null);
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const deleteMutation = useMutation({
     mutationFn: async (accountId: number) => {
       await apiClient.delete(MEMBERS_API.BANK_ACCOUNT(memberId, accountId));
@@ -155,16 +215,6 @@ export default function BankAccountTab({ memberId }: BankAccountTabProps) {
   });
 
   // Form handling
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<BankAccountForm>({
-    resolver: zodResolver(bankAccountSchema),
-  });
 
   const resetForm = () =>
     reset({
@@ -192,6 +242,17 @@ export default function BankAccountTab({ memberId }: BankAccountTabProps) {
     setOpenEdit(true);
   };
 
+  const { data: banks = [], isLoading: banksLoading } = useQuery<Bank[]>({
+    queryKey: ["banks"],
+    queryFn: () => apiClient.get("/api/banks").then((res) => res.data),
+  });
+
+  const handleBankChange = (value: string) => {
+    setValue("bank_code", value);
+    setVerification(null);
+    setVerifyError(null);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -214,7 +275,7 @@ export default function BankAccountTab({ memberId }: BankAccountTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Banknote className="w-6 h-6" />
@@ -240,7 +301,35 @@ export default function BankAccountTab({ memberId }: BankAccountTabProps) {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmitAdd)} className="space-y-4">
-              <div>
+              <div className="space-y-2">
+                <Label htmlFor="bank">Bank</Label>
+                <Select
+                  onValueChange={handleBankChange}
+                  disabled={banksLoading}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue
+                      placeholder={
+                        banksLoading ? "Loading banks..." : "Select a bank"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {banks.map((bank) => (
+                      <SelectItem key={bank.id} value={bank.code}>
+                        {bank.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.bank_code && (
+                  <p className="text-sm text-destructive">
+                    {errors.bank_code.message}
+                  </p>
+                )}
+              </div>
+
+              {/* <div>
                 <Label htmlFor="bank_name">Bank Name</Label>
                 <Input
                   id="bank_name"
@@ -252,7 +341,7 @@ export default function BankAccountTab({ memberId }: BankAccountTabProps) {
                     {errors.bank_name.message}
                   </p>
                 )}
-              </div>
+              </div> */}
 
               <div>
                 <Label htmlFor="account_number">Account Number</Label>
