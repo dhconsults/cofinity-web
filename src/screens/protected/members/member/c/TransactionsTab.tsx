@@ -1,103 +1,217 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowDownRight, ArrowUpRight, CreditCard, AlertCircle } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Download,
+  CreditCard,
+} from "lucide-react";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { apiClient } from "@/lib/api-client";
 import { MEMBERS_API } from "@/constants";
 
+// Helper to export data as CSV
+const exportToCSV = (data: any[], filename: string) => {
+  if (data.length === 0) return;
+
+  const headers = ["Date", "Type", "Amount", "Status", "Description"];
+  const rows = data.map((txn) => [
+    format(new Date(txn.createdAt || txn.date), "PPP"),
+    txn.type.charAt(0).toUpperCase() + txn.type.slice(1),
+    txn.amount.toFixed(2),
+    txn.status.charAt(0).toUpperCase() + txn.status.slice(1),
+    txn.description || txn.notes || "-",
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `${filename}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 export default function TransactionsTab({ memberId }: { memberId: number }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["transactions", memberId],
     queryFn: async () => {
-      const res = await apiClient.get(MEMBERS_API.TRANSACTIONS(memberId) );
-      return res.data;
+      const res = await apiClient.get(MEMBERS_API.TRANSACTIONS(memberId));
+      return res.data || []; // assuming res.data.data is the array
     },
   });
 
+  console.log("Transactions data:", data?.data);
+
   const transactions = data?.data || [];
 
+  const handleExport = () => {
+    exportToCSV(
+      transactions,
+      `transactions_member_${memberId}_${format(new Date(), "yyyy-MM-dd")}`
+    );
+  };
+
+  // Loading State
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="h-10 w-64 bg-neutral-200 rounded-lg animate-pulse" />
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-20 bg-neutral-100 rounded-xl animate-pulse" />
-        ))}
-      </div>
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-5 w-96 mt-2" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        <div className="space-y-3">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
+  // Empty State
+  if (transactions.length === 0) {
+    return (
+      <Card className="p-12 text-center border-dashed border-2">
+        <div className="max-w-md mx-auto">
+          <CreditCard className="w-20 h-20 text-neutral-300 mx-auto mb-6" />
+          <h3 className="text-2xl font-semibold text-neutral-800">
+            No transactions yet
+          </h3>
+          <p className="text-neutral-600 mt-3">
+            Financial activities for this member will appear here once they
+            begin.
+          </p>
+        </div>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold">Transaction History</h2>
-          <p className="text-neutral-600">All financial activities</p>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Transaction History
+          </h2>
+          <p className="text-neutral-600 mt-1">
+            All financial activities for this member
+          </p>
         </div>
-        <Badge variant="outline" className="text-lg px-4 py-2">
-          {transactions.length} Total
-        </Badge>
+
+        <div className="flex items-center gap-4">
+          <Badge variant="secondary" className="text-base px-4 py-2">
+            {transactions.length} Transaction
+            {transactions.length !== 1 ? "s" : ""}
+          </Badge>
+
+          <Button onClick={handleExport} size="sm" className="gap-2">
+            <Download className="w-4 h-4" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {transactions.length === 0 ? (
-          <Card className="p-16 text-center border-dashed">
-            <CreditCard className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-            <p className="text-neutral-600">No transactions yet</p>
-          </Card>
-        ) : (
-          transactions.map((txn: any) => (
-            <Card
-              key={txn.id}
-              className={`p-6 transition-all hover:shadow-none ${
-                txn.type.includes("deposit") ? "border-l-4 border-l-emerald-500" :
-                txn.type.includes("withdrawal") ? "border-l-4 border-l-red-500" :
-                "border-l-4 border-l-blue-500"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-5">
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
-                    txn.type.includes("deposit") ? "bg-emerald-100" :
-                    txn.type.includes("withdrawal") ? "bg-red-100" :
-                    "bg-blue-100"
-                  }`}>
-                    {txn.type.includes("deposit") || txn.type === "membership_fee" ? (
-                      <ArrowDownRight className="w-8 h-8 text-emerald-600" />
-                    ) : txn.type.includes("withdrawal") ? (
-                      <ArrowUpRight className="w-8 h-8 text-red-600" />
-                    ) : (
-                      <CreditCard className="w-8 h-8 text-blue-600" />
+      {/* Table Wrapper for Mobile Horizontal Scroll */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="whitespace-nowrap">
+                  Description / Notes
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transactions.map((txn: any) => (
+                <TableRow
+                  key={txn.id}
+                  className="hover:bg-neutral-50 transition-colors duration-200"
+                >
+                  <TableCell className="font-medium">
+                    {/* {format(new Date(txn.createdAt || txn.date), "dd MMM yyyy")} */}
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {txn.type?.toLowerCase() === "credit" ? (
+                        <>
+                          <ArrowUpRight className="w-4 h-4 text-green-600" />
+                          <span className="text-green-700 font-medium">
+                            Credit
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <ArrowDownRight className="w-4 h-4 text-red-600" />
+                          <span className="text-red-700 font-medium">
+                            Debit
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="font-semibold">
+                    {txn.type?.toLowerCase() === "credit" ? "+" : "-"}$
+                    {Math.abs(txn.amount).toFixed(2)}
+                  </TableCell>
+
+                  <TableCell>
+                    {txn.status?.toLowerCase() === "success" && (
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                        Success
+                      </Badge>
                     )}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg">{txn.type.replace(/_/g, " ").toUpperCase()}</h3>
-                    <p className="text-neutral-600">{txn.reference}</p>
-                    <p className="text-sm text-neutral-500">
-                      {format(new Date(txn.recorded_at), "dd MMM yyyy 'at' hh:mm a")}
-                    </p>
-                  </div>
-                </div>
+                    {txn.status?.toLowerCase() === "pending" && (
+                      <Badge variant="secondary">Pending</Badge>
+                    )}
+                    {txn.status?.toLowerCase() === "failed" && (
+                      <Badge variant="destructive">Failed</Badge>
+                    )}
+                  </TableCell>
 
-                <div className="text-right">
-                  <p className={`text-2xl font-bold ${
-                    txn.type.includes("deposit") ? "text-emerald-600" :
-                    txn.type.includes("withdrawal") ? "text-red-600" :
-                    "text-blue-600"
-                  }`}>
-                    {txn.type.includes("withdrawal") ? "- " : "+ "}₦{Number(txn.amount).toLocaleString()}
-                  </p>
-                  <Badge variant={txn.status === "completed" ? "default" : "secondary"} className="mt-2">
-                    {txn.status}
-                  </Badge>
-                </div>
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
+                  <TableCell className="max-w-xs truncate">
+                    {txn.description || txn.notes || "-"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
+
+      {/* Optional: Footer note */}
+      <p className="text-sm text-neutral-500 text-center">
+        Showing all {transactions.length} transactions
+      </p>
     </div>
   );
 }
