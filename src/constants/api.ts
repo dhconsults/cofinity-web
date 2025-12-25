@@ -60,10 +60,13 @@ export const MEMBERS_API = {
   SAVINGSACCOUNTS: (id: string | number) =>
     `${API_BASE}/api/members/${id}/savings-accounts`,
 
+  BANK_ACCOUNTS: (memberId: string | number) =>
+    `${API_BASE}/api/members/${memberId}/bank-accounts`,
+
   NEXT_OF_KIN_ITEM: (memberId: string | number, nokId: string | number) =>
     `${API_BASE}/api/members/${memberId}/next-of-kin/${nokId}`,
 
-  NEXT_OF_KIN: (memberId: number) =>
+  NEXT_OF_KIN: (memberId: string | number) =>
     `${API_BASE}/api/members/${memberId}/next-of-kin`,
 };
 

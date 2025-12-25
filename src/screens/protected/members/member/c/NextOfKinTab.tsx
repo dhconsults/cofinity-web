@@ -52,7 +52,7 @@ type NextOfKin = {
 };
 
 type Member = {
-  id: number;
+  id: string;
   first_name: string;
   last_name: string;
   next_of_kin?: NextOfKin[];
@@ -88,7 +88,12 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
     },
     onSuccess: () => {
       toast.success("Next of kin added successfully");
-      queryClient.invalidateQueries({ queryKey: ["member", member.id] });
+
+      queryClient.invalidateQueries({
+        queryKey: ["member", member.id],
+        exact: false,
+      });
+
       setOpenAdd(false);
       resetForm();
     },
@@ -102,7 +107,10 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
     },
     onSuccess: () => {
       toast.success("Next of kin updated");
-      queryClient.invalidateQueries({ queryKey: ["member", member.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["member", member.id],
+        exact: false,
+      });
       setOpenEdit(false);
       setEditingKin(null);
       resetForm();
@@ -116,7 +124,10 @@ export default function NextOfKinTab({ member }: NextOfKinTabProps) {
     },
     onSuccess: () => {
       toast.success("Next of kin removed");
-      queryClient.invalidateQueries({ queryKey: ["member", member.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["member", member.id],
+        exact: false,
+      });
       setDeletingId(null);
     },
     onError: () => toast.error("Failed to delete next of kin"),
