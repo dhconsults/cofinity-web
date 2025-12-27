@@ -1,8 +1,8 @@
 // src/app/audit/page.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   Eye,
@@ -13,7 +13,7 @@ import {
   Download,
   RefreshCw,
   Loader2,
-} from 'lucide-react';
+} from "lucide-react";
 
 import {
   Dialog,
@@ -21,14 +21,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -36,29 +36,30 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 
-import { apiClient } from '@/lib/api-client';
-import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
-  
+import { apiClient } from "@/lib/api-client";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+
 interface AuditLog {
   id: number;
   timestamp: string;
   user: string;
   userId: string | null;
-  action: 'created' | 'updated' | 'deleted';
+  user_name: string | null;
+  action: "created" | "updated" | "deleted";
   model: string;
   modelId: string;
   description: string;
@@ -87,23 +88,32 @@ interface AuditResponse {
 
 // Format date and time
 const formatDateTime = (dateString: string) => {
-  return new Date(dateString).toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+  return new Date(dateString).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 };
 
 // Action Badge
 const ActionBadge = ({ action }: { action: string }) => {
   const config = {
-    created: { label: 'Created', className: 'bg-green-100 text-green-800 border-green-200' },
-    updated: { label: 'Updated', className: 'bg-blue-100 text-blue-800 border-blue-200' },
-    deleted: { label: 'Deleted', className: 'bg-red-100 text-red-800 border-red-200' },
-  }[action] || { label: action, className: 'bg-gray-100 text-gray-800' };
+    created: {
+      label: "Created",
+      className: "bg-green-100 text-green-800 border-green-200",
+    },
+    updated: {
+      label: "Updated",
+      className: "bg-blue-100 text-blue-800 border-blue-200",
+    },
+    deleted: {
+      label: "Deleted",
+      className: "bg-red-100 text-red-800 border-red-200",
+    },
+  }[action] || { label: action, className: "bg-gray-100 text-gray-800" };
 
   return (
     <Badge variant="outline" className={config.className}>
@@ -115,17 +125,20 @@ const ActionBadge = ({ action }: { action: string }) => {
 // Model Badge
 const ModelBadge = ({ model }: { model: string }) => {
   const colorMap: Record<string, string> = {
-    Member: 'bg-purple-100 text-purple-800 border-purple-200',
-    Loan: 'bg-blue-100 text-blue-800 border-blue-200',
-    LoanRepayment: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-    Expense: 'bg-orange-100 text-orange-800 border-orange-200',
-    PlatformTransaction: 'bg-teal-100 text-teal-800 border-teal-200',
-    SavingsAccount: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    User: 'bg-gray-100 text-gray-800 border-gray-200',
+    Member: "bg-purple-100 text-purple-800 border-purple-200",
+    Loan: "bg-blue-100 text-blue-800 border-blue-200",
+    LoanRepayment: "bg-indigo-100 text-indigo-800 border-indigo-200",
+    Expense: "bg-orange-100 text-orange-800 border-orange-200",
+    PlatformTransaction: "bg-teal-100 text-teal-800 border-teal-200",
+    SavingsAccount: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    User: "bg-gray-100 text-gray-800 border-gray-200",
   };
 
   return (
-    <Badge variant="outline" className={colorMap[model] || 'bg-gray-100 text-gray-800'}>
+    <Badge
+      variant="outline"
+      className={colorMap[model] || "bg-gray-100 text-gray-800"}
+    >
       {model}
     </Badge>
   );
@@ -135,14 +148,14 @@ export default function AuditLogPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [perPage, setPerPage] = useState('25');
-  const [actionFilter, setActionFilter] = useState('all');
-  const [modelFilter, setModelFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [perPage, setPerPage] = useState("25");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [modelFilter, setModelFilter] = useState("all");
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  const isOwnerOrAdmin = ['owner', 'admin'].includes(user?.role || '');
+  const isOwnerOrAdmin = ["owner", "admin"].includes(user?.role || "");
 
   const {
     data: response,
@@ -150,14 +163,17 @@ export default function AuditLogPage() {
     error,
     refetch,
   } = useQuery<AuditResponse>({
-    queryKey: ['audit-logs', { searchQuery, perPage, actionFilter, modelFilter }],
+    queryKey: [
+      "audit-logs",
+      { searchQuery, perPage, actionFilter, modelFilter },
+    ],
     queryFn: () =>
       apiClient
-        .get('/api/audit-logs', {
+        .get("/api/audit-logs", {
           params: {
             search: searchQuery || undefined,
-            action: actionFilter === 'all' ? undefined : actionFilter,
-            model: modelFilter === 'all' ? undefined : modelFilter,
+            action: actionFilter === "all" ? undefined : actionFilter,
+            model: modelFilter === "all" ? undefined : modelFilter,
             per_page: perPage,
           },
         })
@@ -166,12 +182,17 @@ export default function AuditLogPage() {
   });
 
   const logs = response?.data.data || [];
-  const stats = response?.stats || { totalLogs: 0, created: 0, updated: 0, deleted: 0 };
+  const stats = response?.stats || {
+    totalLogs: 0,
+    created: 0,
+    updated: 0,
+    deleted: 0,
+  };
   const uniqueModels = response?.unique_models || [];
 
   const handleRefresh = () => {
     refetch();
-    toast.success('Refreshed', { description: 'Audit logs updated.' });
+    toast.success("Refreshed", { description: "Audit logs updated." });
   };
 
   const handleViewDetails = (log: AuditLog) => {
@@ -201,7 +222,9 @@ export default function AuditLogPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Audit Log</h1>
-          <p className="text-gray-600 mt-1">Track all system activities and user actions</p>
+          <p className="text-gray-600 mt-1">
+            Track all system activities and user actions
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleRefresh} className="gap-2">
@@ -224,7 +247,11 @@ export default function AuditLogPage() {
               Total Activities
             </CardDescription>
             <CardTitle className="text-2xl">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.totalLogs}
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats.totalLogs
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -238,7 +265,11 @@ export default function AuditLogPage() {
               Created Actions
             </CardDescription>
             <CardTitle className="text-2xl text-green-600">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.created}
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats.created
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -252,7 +283,11 @@ export default function AuditLogPage() {
               Updated Actions
             </CardDescription>
             <CardTitle className="text-2xl text-blue-600">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.updated}
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats.updated
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -266,7 +301,11 @@ export default function AuditLogPage() {
               Deleted Actions
             </CardDescription>
             <CardTitle className="text-2xl text-red-600">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.deleted}
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                stats.deleted
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -354,7 +393,9 @@ export default function AuditLogPage() {
                   <TableHead className="font-semibold">Model ID</TableHead>
                   <TableHead className="font-semibold">Description</TableHead>
                   <TableHead className="font-semibold">IP Address</TableHead>
-                  <TableHead className="font-semibold text-center">Details</TableHead>
+                  <TableHead className="font-semibold text-center">
+                    Details
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -366,7 +407,10 @@ export default function AuditLogPage() {
                   </TableRow>
                 ) : logs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    <TableCell
+                      colSpan={8}
+                      className="text-center py-8 text-gray-500"
+                    >
                       No audit logs found
                     </TableCell>
                   </TableRow>
@@ -376,15 +420,21 @@ export default function AuditLogPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm">{formatDateTime(log.timestamp)}</span>
+                          <span className="text-sm">
+                            {formatDateTime(log.timestamp)}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-gray-400" />
                           <div>
-                            <div className="font-medium">{log.user}</div>
-                            {log.userId && <div className="text-xs text-gray-500">{log.userId}</div>}
+                            <div className="font-medium">{log.user_name}</div>
+                            {log.userId && (
+                              <div className="text-xs text-gray-500">
+                                {log.userId}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </TableCell>
@@ -394,11 +444,15 @@ export default function AuditLogPage() {
                       <TableCell>
                         <ModelBadge model={log.model} />
                       </TableCell>
-                      <TableCell className="font-mono text-sm">{log.modelId}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {log.modelId}
+                      </TableCell>
                       <TableCell className="max-w-xs">
                         <p className="truncate">{log.description}</p>
                       </TableCell>
-                      <TableCell className="font-mono text-sm text-gray-600">{log.ipAddress}</TableCell>
+                      <TableCell className="font-mono text-sm text-gray-600">
+                        {log.ipAddress}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center">
                           <Button
@@ -432,7 +486,9 @@ export default function AuditLogPage() {
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Audit Log Details</DialogTitle>
-            <DialogDescription>Complete information about this activity</DialogDescription>
+            <DialogDescription>
+              Complete information about this activity
+            </DialogDescription>
           </DialogHeader>
 
           {selectedLog && (
@@ -442,7 +498,9 @@ export default function AuditLogPage() {
                   <Label className="text-gray-600">Timestamp</Label>
                   <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
                     <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium">{formatDateTime(selectedLog.timestamp)}</span>
+                    <span className="font-medium">
+                      {formatDateTime(selectedLog.timestamp)}
+                    </span>
                   </div>
                 </div>
 
@@ -452,7 +510,11 @@ export default function AuditLogPage() {
                     <User className="w-4 h-4 text-gray-400" />
                     <div>
                       <div className="font-medium">{selectedLog.user}</div>
-                      {selectedLog.userId && <div className="text-xs text-gray-500">{selectedLog.userId}</div>}
+                      {selectedLog.userId && (
+                        <div className="text-xs text-gray-500">
+                          {selectedLog.userId}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -473,18 +535,24 @@ export default function AuditLogPage() {
 
                 <div className="space-y-2">
                   <Label className="text-gray-600">Model ID</Label>
-                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">{selectedLog.modelId}</div>
+                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">
+                    {selectedLog.modelId}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-gray-600">IP Address</Label>
-                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">{selectedLog.ipAddress}</div>
+                  <div className="p-3 bg-gray-50 rounded-md font-mono text-sm">
+                    {selectedLog.ipAddress}
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label className="text-gray-600">Description</Label>
-                <div className="p-3 bg-gray-50 rounded-md">{selectedLog.description}</div>
+                <div className="p-3 bg-gray-50 rounded-md">
+                  {selectedLog.description}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -517,7 +585,10 @@ export default function AuditLogPage() {
               )}
 
               <div className="flex justify-end pt-4 border-t">
-                <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsViewDialogOpen(false)}
+                >
                   Close
                 </Button>
               </div>

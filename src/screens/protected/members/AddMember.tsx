@@ -132,7 +132,7 @@ export default function AddMember() {
       navigate("/members");
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.message || "Failed to add member";
+      const msg = error?.message || "Failed to add member";
       if (error.response?.status === 403) {
         toast.error("Member limit reached. Upgrade your plan.");
       } else {

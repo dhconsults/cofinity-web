@@ -93,7 +93,7 @@ export default function ViewMember() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-neutral-50 p-4 sm:p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <Skeleton className="h-10 w-40 mb-6" />
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <div className="flex flex-col sm:flex-row items-start gap-6">
@@ -156,8 +156,8 @@ export default function ViewMember() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-black to-gray-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex flex-col sm:flex-row items-start sm:items-end gap-6">
+      <div className="bg-gradient-to-r from-black to-gray-800 text-white -mx-5">
+        <div className="mx-auto -mx-3 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex flex-col sm:flex-row items-start sm:items-end gap-6">
           <Button
             variant="ghost"
             size="icon"
@@ -231,7 +231,7 @@ export default function ViewMember() {
       </div>
 
       {/* Main Layout */}
-      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className=" mx-auto px-0 sm:px-6 lg:px-8 mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar - Desktop & Tablet */}
         <aside className="hidden lg:block lg:col-span-1">
           <nav className="bg-white rounded-2xl shadow-sm p-4 sticky top-6">
