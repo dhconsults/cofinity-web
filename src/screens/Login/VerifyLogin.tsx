@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { AUTH_API } from "@/constants/api";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/lib/axios";
@@ -20,33 +20,26 @@ import apiClient from "@/lib/api-client";
 
 const VerifyLogin: React.FC = () => {
   const navigate = useNavigate();
- 
-  const {logout, user, tenants, isAuthenticated } = useAuth(); 
 
- 
+  const { logout, user, tenants, isAuthenticated } = useAuth();
 
-
-  const email = user?.email; 
-
+  const email = user?.email;
 
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
-   
+
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-
-  useEffect(()=> { 
-    if(!isAuthenticated){ 
-
+  useEffect(() => {
+    if (!isAuthenticated) {
       toast.error("You must be logged in to access this page.");
 
-      navigate('/login')
+      navigate("/login");
     }
-
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate]);
 
   // Countdown timer
   useEffect(() => {
@@ -122,44 +115,27 @@ const VerifyLogin: React.FC = () => {
         code: verificationCode,
       });
 
-      
-
       // Trigger user fetch via login (or refetchUser)
       // Since user might not be logged in yet, we'll redirect and let AuthContext handle it
 
       //check if user has tenant get cooperative
 
-      console.log(response)
+      if (response.success && response.data.success) {
+        await saveData("isLoginVerified", true);
 
+        if (tenants != null && tenants.length > 0) {
+          navigate("/cooperative-selection");
+        } else {
+          navigate("/create-cooperative");
+        }
+      } else {
+        toast.error("Invalid Code", {
+          description: "Invalid or expired verification code.",
+        });
+      }
 
-      if(response.success && response.data.success){
-      await saveData('isLoginVerified', true);
-
-       
-
-     if(tenants != null && tenants.length >  0){
-
-       navigate('/cooperative-selection')
-
-      
-    
-     }else{ 
-      
-       navigate('/create-cooperative')
-
-     } 
-    }else{ 
-
-      toast.error("Invalid Code", {description: 'Invalid or expired verification code.'})
-    }
- 
-
-
-      
-
-    //  navigate("/create-cooperative", { replace: true });
+      //  navigate("/create-cooperative", { replace: true });
     } catch (error: any) {
- 
       const message =
         error.response?.data?.message ||
         "Invalid or expired verification code.";
@@ -168,7 +144,7 @@ const VerifyLogin: React.FC = () => {
 
       setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
-    } finally { 
+    } finally {
       setCode(["", "", "", "", "", ""]);
       setIsVerifying(false);
     }
@@ -199,17 +175,14 @@ const VerifyLogin: React.FC = () => {
   };
 
   const handleBack = async () => {
+    await logout();
 
-    await logout()
+    toast.success("Logged out successfully!", {
+      description: `You have been logged out.`,
+    });
 
-      toast.success("Logged out successfully!", {
-        description: `You have been logged out.`,
-      });
-
-      //fake a litle delay 
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-
+    //fake a litle delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // navigate("/login");
   };
@@ -233,13 +206,12 @@ const VerifyLogin: React.FC = () => {
                 Verify your email
               </CardTitle>
               <CardDescription className="mt-2">
-                We've sent a 6-digit verification code to 
-                <b> {email} </b> 
+                We've sent a 6-digit verification code to
+                <b> {email} </b>
               </CardDescription>
             </div>
 
             {/* Email display/edit */}
-           
           </CardHeader>
 
           <CardContent className="space-y-6">
@@ -317,7 +289,6 @@ const VerifyLogin: React.FC = () => {
               <p className="text-xs text-neutral-600">
                 Tip: You can paste the entire 6-digit code
               </p>
-             
             </div>
           </CardContent>
         </Card>

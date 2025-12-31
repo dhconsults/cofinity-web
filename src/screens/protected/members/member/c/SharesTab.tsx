@@ -1,21 +1,12 @@
 // src/components/member/SharesTab.tsx
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import {
-  Coins,
-  Plus,
-  AlertCircle,
-  CheckCircle2,
-  Calendar,
-  DollarSign,
-  Building2,
-} from "lucide-react";
+import { Coins, Calendar, DollarSign, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { apiClient } from "@/lib/api-client";
-import { MEMBERS_API } from "@/constants";
+
 import { cn } from "@/lib/utils";
 
 interface ShareAccount {
@@ -39,41 +30,33 @@ interface ShareAccount {
   };
 }
 
+type Member = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  share_accounts?: ShareAccount[];
+};
+
 interface SharesTabProps {
-  memberId: number;
-  // Optional: pass member data if already available from parent
-  member?: any;
+  member?: Member;
 }
 
-export default function SharesTab({ memberId, member }: SharesTabProps) {
-  const { data, isLoading, isError } = useQuery<ShareAccount[]>({
-    queryKey: ["member-share-accounts", memberId],
-    queryFn: async () => {
-      const res = await apiClient.get(MEMBERS_API.DETAIL(memberId));
-      // Assuming the full member response is returned and contains share_accounts
-      return res.data?.share_accounts || [];
-    },
-  });
+export default function SharesTab({ member }: SharesTabProps) {
+  const shareAccounts = member?.share_accounts || [];
 
-  const shareAccounts = data || [];
-
-  if (isLoading) {
-    return <SharesTabSkeleton />;
-  }
-
-  if (isError || !data) {
-    return (
-      <Card className="p-10 text-center border-destructive/30">
-        <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-destructive">
-          Failed to load share accounts
-        </h3>
-        <p className="text-sm text-muted-foreground mt-2">
-          Please try again later
-        </p>
-      </Card>
-    );
-  }
+  //   if (isError || !data) {
+  //     return (
+  //       <Card className="p-10 text-center border-destructive/30">
+  //         <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+  //         <h3 className="text-lg font-semibold text-destructive">
+  //           Failed to load share accounts
+  //         </h3>
+  //         <p className="text-sm text-muted-foreground mt-2">
+  //           Please try again later
+  //         </p>
+  //       </Card>
+  //     );
+  //   }
 
   return (
     <div className="space-y-6">

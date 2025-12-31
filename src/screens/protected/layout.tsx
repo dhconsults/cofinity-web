@@ -35,7 +35,7 @@ export default function ProtectedLayout({
     }
 
     if (res == false || (res == null && !isLoading)) {
-      router("verify-login", { replace: true });
+      router("/verify-login", { replace: true });
     }
   }, [isLoading, isAuthenticated, router, res]);
 

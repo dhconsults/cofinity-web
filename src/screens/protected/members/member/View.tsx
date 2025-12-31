@@ -135,9 +135,7 @@ export default function ViewMember() {
         {activeTab === "overview" && <AccountOverview member={member} />}
         {activeTab === "savings" && <SavingsAccountTab memberId={member.id} />}
         {activeTab === "loans" && <LoansTab memberId={member.id} />}
-        {activeTab === "shares" && (
-          <SharesTab memberId={member.id} member={member} />
-        )}
+        {activeTab === "shares" && <SharesTab member={member} />}
         {activeTab === "transactions" && (
           <TransactionsTab memberId={member.id} />
         )}

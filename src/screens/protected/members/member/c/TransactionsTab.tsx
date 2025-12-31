@@ -59,8 +59,6 @@ export default function TransactionsTab({ memberId }: { memberId: number }) {
     },
   });
 
-  console.log("Transactions data:", data?.data);
-
   const transactions = data?.data || [];
 
   const handleExport = () => {

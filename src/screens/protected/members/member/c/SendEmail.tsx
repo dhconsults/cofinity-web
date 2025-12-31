@@ -77,19 +77,21 @@ export default function SendEmail({
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
 
+  const message = body;
+
   const sendEmailMutation = useMutation({
     mutationFn: () =>
       apiClient.post(MEMBERS_API.SENDEMAIL(member.id), {
         subject,
-        body,
+        message,
       }),
     onSuccess: () => {
       toast.success("Email sent successfully");
       setSubject("");
       setBody("");
     },
-    onError: () => {
-      toast.error("Failed to send email");
+    onError: (err: any) => {
+      toast.error("Failed to send email", { description: err?.message });
     },
   });
 

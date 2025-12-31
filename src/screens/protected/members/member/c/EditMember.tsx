@@ -81,11 +81,15 @@ export default function EditMember({ member: initialMember }: { member: any }) {
     setForm(initialMember);
   }, [initialMember]);
 
-  const { data: branchesData } = useQuery({
+  const { data } = useQuery({
     queryKey: ["branches"],
-    queryFn: () =>
-      apiClient.get(BRANCH_API.LIST).then((res) => res.data.branches),
+    queryFn: async () => {
+      const res = await apiClient.get(BRANCH_API.LIST);
+      return res.data; // Full payload: { branches: [], quota: {}, ... }
+    },
   });
+
+  const branchesData = data?.branches ?? [];
 
   const updateMember = useMutation({
     mutationFn: () => apiClient.put(MEMBERS_API.UPDATE(form.id), form),
