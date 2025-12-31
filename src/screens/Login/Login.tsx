@@ -18,7 +18,6 @@ import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
- 
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -86,9 +85,11 @@ const Login: React.FC = () => {
 
       navigate("/verify-login"); // <-- redirect here
     } catch (error: any) {
-    
       toast.error("Login failed", {
-        description: error.response?.data?.message || error.message || "Invalid credentials",
+        description:
+          error.response?.data?.message ||
+          error.message ||
+          "Invalid credentials",
       });
     } finally {
       setIsLoading(false);
@@ -123,9 +124,11 @@ const Login: React.FC = () => {
 
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="mb-12">
-            <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-6">
-              <span className="text-2xl font-bold text-black">C</span>
-            </div>
+            <img
+              className="w-15 h-auto mb-4"
+              src="/images/Cofinitylogo11.png"
+              alt=""
+            />
             <h1 className="text-5xl font-bold mb-4 tracking-tight">Cofinity</h1>
             <div className="w-20 h-1 bg-white rounded-full mb-6"></div>
             <p className="text-xl text-neutral-300 leading-relaxed max-w-md">
@@ -161,9 +164,11 @@ const Login: React.FC = () => {
       <div className="flex-1 flex items-center justify-center bg-neutral-50 px-6 py-12">
         <div className="w-full max-w-lg">
           <div className="lg:hidden flex items-center justify-center mb-8">
-            <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
-              <span className="text-xl font-bold text-white">C</span>
-            </div>
+            <img
+              className="w-12 h-auto"
+              src="/images/Cofinitylogo12.png"
+              alt=""
+            />
           </div>
 
           <Card className="border-neutral-100 shadow-none">

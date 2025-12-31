@@ -1,5 +1,6 @@
 import React from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
+
 import {
   Home,
   Users,
@@ -76,7 +77,13 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       >
         <div>
           <div className="hidden lg:flex items-center gap-3 mb-8">
-            <svg
+            <img
+              className="w-40 h-auto"
+              src="/images/Cofinitylogo6.png"
+              alt=""
+            />
+
+            {/* <svg
               className="w-8 h-8 text-primary"
               fill="none"
               viewBox="0 0 48 48"
@@ -87,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                 fill="currentColor"
               />
             </svg>
-            <h1 className="text-xl font-bold">Cofinity</h1>
+            <h1 className="text-xl font-bold">Cofinity</h1> */}
           </div>
 
           <nav className="flex flex-col gap-2">
