@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { remove } from "@/lib/storageHelper";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -29,9 +30,23 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const Login: React.FC = () => {
   const navigate = useNavigate();
 
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  //check if user is already authenticated and redirect back to dashboard
+
+  alert("Checking authentication status..." + isAuthenticated);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (isAuthenticated) {
+        navigate("/dashboard");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, isAuthenticated]);
 
   const {
     register,
@@ -82,6 +97,10 @@ const Login: React.FC = () => {
       localStorage.setItem("verifyEmail", data.email);
 
       toast.success("Login successful, verify Your login to continue");
+
+      await remove("isLoginVerified");
+      //remove selected cooperative if any
+      await remove("selected_cooperative_id");
 
       navigate("/verify-login"); // <-- redirect here
     } catch (error: any) {

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { getData } from '@/lib/storageHelper';
-import { Skeleton } from '@/components/ui/skeleton';
-import apiClient from '@/lib/api-client';
-import { TENANT_API } from '@/constants';
+import React, { useEffect, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { getData } from "@/lib/storageHelper";
+import { Skeleton } from "@/components/ui/skeleton";
+import apiClient from "@/lib/api-client";
+import { TENANT_API } from "@/constants";
 
 type Props = {
   children: React.ReactNode;
@@ -17,15 +17,17 @@ type Props = {
 export default function ProtectedRoute({
   children,
   requireCooperative = true,
-  redirectTo = '/login',
+  redirectTo = "/login",
 }: Props) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const location = useLocation();
 
   const [isChecking, setIsChecking] = useState(true);
-  const [tenantStatus, setTenantStatus] = useState<'active' | 'grace_period' | 'suspended' | null>(null);
+  const [tenantStatus, setTenantStatus] = useState<
+    "active" | "grace_period" | "suspended" | null
+  >(null);
 
-  const selectedCoopId = getData<string | number>('selected_cooperative_id');
+  const selectedCoopId = getData<string | number>("selected_cooperative_id");
 
   useEffect(() => {
     const verifyTenant = async () => {
@@ -36,25 +38,27 @@ export default function ProtectedRoute({
 
       try {
         // This endpoint should return tenant details including status
-        const response = await apiClient.post(TENANT_API.SWITCH, { tenant_id: selectedCoopId });
+        const response = await apiClient.post(TENANT_API.SWITCH, {
+          tenant_id: selectedCoopId,
+        });
 
         if (response.success && response.data?.tenant) {
           const status = response.data.tenant.status; // 'active' | 'grace_period' | 'suspended'
           setTenantStatus(status);
 
           // If suspended, clear selection to force re-login/selection later
-          if (status === 'suspended') {
-            localStorage.removeItem('selected_cooperative_id');
+          if (status === "suspended") {
+            localStorage.removeItem("selected_cooperative_id");
           }
         } else {
           // Invalid tenant
-          localStorage.removeItem('selected_cooperative_id');
+          localStorage.removeItem("selected_cooperative_id");
           setTenantStatus(null);
         }
       } catch (error) {
-        console.warn('Failed to verify tenant status:', error);
+        console.warn("Failed to verify tenant status:", error);
         // Optional: fallback to allow access if API down
-        setTenantStatus('active');
+        setTenantStatus("active");
       } finally {
         setIsChecking(false);
       }
@@ -75,14 +79,21 @@ export default function ProtectedRoute({
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
+  // if not login veriried redirect to verify login
+  const res = getData("isLoginVerified");
+
+  if (res == false || res == null) {
+    return <Navigate to="/verify-login" replace />;
+  }
+
   // Needs cooperative but none selected or invalid
   if (requireCooperative && (!selectedCoopId || tenantStatus === null)) {
     return <Navigate to="/cooperative-selection" replace />;
   }
 
   // SUSPENDED: only allow access to billing page
-  if (tenantStatus === 'suspended') {
-    if (location.pathname.startsWith('/billing')) {
+  if (tenantStatus === "suspended") {
+    if (location.pathname.startsWith("/billing")) {
       return <>{children}</>;
     }
     return <Navigate to="/billing" replace />;
