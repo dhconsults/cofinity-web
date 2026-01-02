@@ -12,6 +12,7 @@ import {
   Building2,
   Settings,
   NotebookPen,
+  DollarSign,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -161,6 +162,14 @@ export default function Navbar({ setSidebarOpen, title }: NavbarProps) {
               >
                 <Building2 className="mr-2 h-4 w-4" />
                 <span>Switch Cooperative</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => navigate("/billing")}
+                className="cursor-pointer"
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                <span>Billing & Subscription</span>
               </DropdownMenuItem>
 
               <DropdownMenuItem

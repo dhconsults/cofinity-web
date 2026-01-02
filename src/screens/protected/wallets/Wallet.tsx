@@ -129,7 +129,8 @@ export default function WalletPage() {
         <div className="text-start   sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold">Cooperative Wallet</h1>
           <p className="text-muted-foreground text-sm sm:text-base mt-1">
-            Real-time funds received via Nomba virtual account
+            Real-time tracking of funds securely received via your Nomba virtual
+            account
           </p>
         </div>
         <Button
@@ -221,7 +222,7 @@ export default function WalletPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Banknote className="h-5 w-5" />
-            Receive Member Contributions
+            Virtual Account for Member Payments
           </CardTitle>
           <CardDescription>
             Share these details with members. All transfers instantly credit
